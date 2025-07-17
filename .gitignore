@@ -1,0 +1,20 @@
+# Node
+node_modules/
+.env
+*.log
+
+# Vite
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Misc
+*.local
+*.cache
