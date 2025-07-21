@@ -29,7 +29,7 @@ const Signup = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    fetch('http://localhost:3000/api/users', {
+    fetch('http://localhost:3000/api/users/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
