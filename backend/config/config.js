@@ -4,7 +4,7 @@ const config = {
   jwtSecret: process.env.JWT_SECRET || 'linx_super_secret_key',
   mongoUri:
     process.env.MONGODB_URI ||
-    'mongodb+srv://sqaher:LR3iKYVjY3yQqdPt@centennialcollegecluste.rkaeskw.mongodb.net/linx' || // updated to specify DB
+    'mongodb+srv://sadkandel00:2wUAxypQNvLYXEoj@cluster0.t6picbu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0' || // updated to specify DB
     process.env.MONGO_HOST ||
     'mongodb://' +
       (process.env.IP || 'localhost') +
