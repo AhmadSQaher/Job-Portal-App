@@ -1,28 +1,100 @@
 // Home.jsx
-import React from 'react'
-import { Typography, Button, Container, Box } from '@mui/material'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowRight, Users, Building2, TrendingUp } from "lucide-react";
+import Logo from "../components/Logo";
 
 export default function Home() {
+  const stats = [
+    { label: "Active Jobs", value: "12,847", icon: TrendingUp },
+    { label: "Companies", value: "2,156", icon: Building2 },
+    { label: "Job Seekers", value: "45,231", icon: Users },
+  ];
+
   return (
-    <Container maxWidth="md" sx={{ textAlign: 'center', mt: 10 }}>
-      <Typography variant="h2" gutterBottom>
-        Welcome to LINX 
-      </Typography>
-      <Typography variant="h6" paragraph>
-        Connect. Hire. Grow. The portal that links talent to opportunity.
-      </Typography>
-      <Box sx={{ mt: 4 }}>
-        <Button component={Link} to="/signup" variant="contained" sx={{ mr: 2 }}>
-          Sign Up
-        </Button>
-        <Button component={Link} to="/signin" variant="outlined" sx={{ mr: 2 }}>
-          Sign In
-        </Button>
-        <Button component={Link} to="/jobs" variant="text">
-          View Jobs
-        </Button>
-      </Box>
-    </Container>
-  )
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Text content */}
+            <div className="text-left max-w-2xl">
+              {/* Logo */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="mb-8"
+              >
+                <Logo size="lg" />
+              </motion.div>
+
+              <motion.h1
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                Welcome to <span className="text-yellow-400">LINX</span>
+              </motion.h1>
+
+              <motion.p
+                className="text-xl md:text-2xl mb-8 text-blue-100"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                Connect. Hire. Grow. The portal that links talent to
+                opportunity.
+              </motion.p>
+
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <Link
+                  to="/register"
+                  className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+                <Link
+                  to="/jobs"
+                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center"
+                >
+                  Browse Jobs
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Right side - Stats */}
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-3 gap-6"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              {stats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={stat.label}
+                    className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center border border-white/20"
+                  >
+                    <Icon className="w-8 h-8 mx-auto mb-3 text-yellow-400" />
+                    <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                    <div className="text-blue-100 text-sm">{stat.label}</div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

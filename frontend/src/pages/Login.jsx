@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
-export default function Signin() {
-  const { signin } = useAuth();
+const Login = () => {
   const navigate = useNavigate();
-
+  const { signin } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -68,9 +67,9 @@ export default function Signin() {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Sign In to LINX
+            Welcome back
           </h2>
-          <p className="text-gray-600">Welcome back to your account</p>
+          <p className="text-gray-600">Sign in to your account</p>
         </div>
 
         <motion.div
@@ -136,6 +135,23 @@ export default function Signin() {
               </div>
             </div>
 
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">Remember me</span>
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -145,6 +161,32 @@ export default function Signin() {
               {isLoading ? "Signing In..." : "Sign In"}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Login */}
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <span className="text-sm font-medium text-gray-700">Google</span>
+            </button>
+            <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <span className="text-sm font-medium text-gray-700">
+                LinkedIn
+              </span>
+            </button>
+          </div>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
@@ -162,4 +204,6 @@ export default function Signin() {
       </motion.div>
     </div>
   );
-}
+};
+
+export default Login;
