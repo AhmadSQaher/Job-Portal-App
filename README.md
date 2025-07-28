@@ -61,7 +61,7 @@ A full-stack job portal application built with React, Node.js, and MongoDB. Conn
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/YourUsername/Linx.git
+   git clone https://github.com/Milli1544/Linx.git
    cd Linx
    ```
 
@@ -81,8 +81,6 @@ A full-stack job portal application built with React, Node.js, and MongoDB. Conn
    ```
 
 3. **Environment Configuration**
-
-   Create `.env` file in the backend directory:
 
    ```env
    MONGODB_URI=your_mongodb_connection_string
@@ -224,7 +222,7 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-**Your Name** - [GitHub](https://github.com/YourUsername)
+**Milli** - [GitHub](https://github.com/Milli1544)
 
 ## 🙏 Acknowledgments
 
