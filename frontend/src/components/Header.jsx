@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -20,12 +20,27 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const navigation = [
-    { name: "Find Jobs", href: "/jobs", icon: Search },
-    { name: "View Jobs", href: "/view-jobs", icon: Search },
-    { name: "Companies", href: "/companies", icon: Building2 },
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  ];
+  const navigation = useMemo(() => {
+    const getDashboardLink = () => {
+      if (!user) return "/dashboard";
+      if (user.role === "dev" || user.role === "admin") return "/dev/dashboard";
+      if (user.role === "employer") return "/employer/dashboard";
+      if (user.role === "user") return "/user/dashboard";
+      return "/dashboard";
+    };
+
+    const dashboardLink = getDashboardLink();
+    console.log("🔗 Dashboard link for user:", user?.role, "->", dashboardLink);
+
+    return [
+      { name: "Find Jobs", href: "/jobs", icon: Search },
+      { name: "View Jobs", href: "/view-jobs", icon: Search },
+      { name: "Companies", href: "/companies", icon: Building2 },
+      ...(user
+        ? [{ name: "Dashboard", href: dashboardLink, icon: LayoutDashboard }]
+        : []),
+    ];
+  }, [user]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -80,6 +95,9 @@ const Header = () => {
                 >
                   Test Post Job
                 </Link>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  {user.role}
+                </span>
                 <Link
                   to="/profile"
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
@@ -98,6 +116,9 @@ const Header = () => {
               </>
             ) : (
               <>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  Not signed in
+                </span>
                 <Link
                   to="/login"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg text-sm font-medium transition-colors"

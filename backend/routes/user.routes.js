@@ -1,12 +1,12 @@
-import express from 'express'
-import userCtrl from '../controllers/user.controller.js'
+import express from "express";
+import userCtrl from "../controllers/user.controller.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/create', userCtrl.create)
-router.get('/', userCtrl.list)
-router.put('/:userId', userCtrl.update)
-router.delete('/:userId', userCtrl.remove)
-router.param('userId', userCtrl.userByID)
+// Basic CRUD routes
+router.get("/", userCtrl.list);
+router.get("/:userId", userCtrl.read);
+router.put("/:userId", userCtrl.update);
+router.delete("/:userId", userCtrl.remove);
 
-export default router
+export default router;

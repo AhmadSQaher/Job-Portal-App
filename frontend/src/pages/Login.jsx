@@ -30,22 +30,35 @@ const Login = () => {
 
     try {
       const result = await signin(formData.username, formData.password);
+      console.log("🔐 Login result:", result);
+
       if (result.error) {
         setError(result.error);
       } else {
         // Redirect based on user role
         const role = result.user.role;
+        console.log(
+          "🎯 User role:",
+          role,
+          "Redirecting to appropriate dashboard..."
+        );
+
         if (role === "user") {
+          console.log("➡️ Redirecting to /dashboard");
           navigate("/dashboard");
         } else if (role === "employer") {
+          console.log("➡️ Redirecting to /employer/dashboard");
           navigate("/employer/dashboard");
         } else if (role === "dev" || role === "admin") {
+          console.log("➡️ Redirecting to /dev/dashboard");
           navigate("/dev/dashboard");
         } else {
+          console.log("➡️ Redirecting to / (unknown role)");
           navigate("/");
         }
       }
     } catch (err) {
+      console.error("❌ Login error:", err);
       setError("Login failed. Please try again.");
     } finally {
       setIsLoading(false);

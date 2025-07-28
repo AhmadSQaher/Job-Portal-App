@@ -1,70 +1,254 @@
-import User from '../models/user.model.js'
-import extend from 'lodash/extend.js'
-import errorHandler from './error.controller.js'
+import User from "../models/user.model.js";
+import extend from "lodash/extend.js";
+import errorHandler from "./error.controller.js";
 
-// Create a new user
-const create = async (req, res) => {
-  console.log('✅ Creating user via controller')
+// GET /api/users
+export const list = async (req, res) => {
   try {
-    const user = new User(req.body)
-    await user.save()
-    return res.status(200).json({ message: 'Successfully signed up!' })
+    const users = await User.find({}).select("-password");
+    res.json(users);
   } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
+    return res.status(400).json({
+      error: "Could not retrieve users",
+    });
   }
-}
+};
 
-// List all users (admin-level access)
-const list = async (req, res) => {
+// GET /api/users/:userId
+export const read = async (req, res) => {
   try {
-    const users = await User.find().select('name email role updated created')
-    res.json(users)
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
-
-// Get user by ID (middleware)
-const userByID = async (req, res, next, id) => {
-  try {
-    const user = await User.findById(id)
+    const user = await User.findById(req.params.userId).select("-password");
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      return res.status(404).json({
+        error: "User not found",
+      });
     }
-    req.profile = user
-    next()
+    res.json(user);
   } catch (err) {
-    return res.status(400).json({ error: 'Could not retrieve user' })
+    return res.status(400).json({
+      error: "Could not retrieve user",
+    });
   }
-}
+};
 
-// Read user profile
-const read = (req, res) => {
-  return res.json(req.profile)
-}
-
-// Update user profile
-const update = async (req, res) => {
+// PUT /api/users/:userId
+export const update = async (req, res) => {
   try {
-    let user = req.profile
-    user = extend(user, req.body)
-    user.updated = Date.now()
-    await user.save()
-    res.json(user)
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: req.body },
+      { new: true }
+    ).select("-password");
 
-// Delete user profile
-const remove = async (req, res) => {
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json(user);
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not update user",
+    });
+  }
+};
+
+// DELETE /api/users/:userId
+export const remove = async (req, res) => {
   try {
-    const user = req.profile
-    const deletedUser = await user.deleteOne()
-    res.json(deletedUser)
+    const user = await User.findByIdAndDelete(req.params.userId);
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+    res.json({ message: "User deleted successfully" });
   } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
+    return res.status(400).json({
+      error: "Could not delete user",
+    });
   }
-}
+};
 
-export default { create, list, userByID, read, update, remove }
+// Admin User Management Methods
+
+// POST /api/admin/users/:userId/suspend
+export const suspendUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: { status: "suspended" } },
+      { new: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json({ message: "User suspended successfully", user });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not suspend user",
+    });
+  }
+};
+
+// POST /api/admin/users/:userId/activate
+export const activateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: { status: "active" } },
+      { new: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json({ message: "User activated successfully", user });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not activate user",
+    });
+  }
+};
+
+// POST /api/admin/users/:userId/delete
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.userId);
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete user",
+    });
+  }
+};
+
+// POST /api/admin/users/:userId/update
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: req.body },
+      { new: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json({ message: "User updated successfully", user });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not update user",
+    });
+  }
+};
+
+// Bulk User Actions
+
+// POST /api/admin/users/bulk/suspend
+export const bulkSuspendUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({
+        error: "User IDs array is required",
+      });
+    }
+
+    const result = await User.updateMany(
+      { _id: { $in: userIds } },
+      { $set: { status: "suspended" } }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} users suspended successfully`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not suspend users",
+    });
+  }
+};
+
+// POST /api/admin/users/bulk/activate
+export const bulkActivateUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({
+        error: "User IDs array is required",
+      });
+    }
+
+    const result = await User.updateMany(
+      { _id: { $in: userIds } },
+      { $set: { status: "active" } }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} users activated successfully`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not activate users",
+    });
+  }
+};
+
+// POST /api/admin/users/bulk/delete
+export const bulkDeleteUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({
+        error: "User IDs array is required",
+      });
+    }
+
+    const result = await User.deleteMany({ _id: { $in: userIds } });
+
+    res.json({
+      message: `${result.deletedCount} users deleted successfully`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete users",
+    });
+  }
+};
+
+export default {
+  list,
+  read,
+  update,
+  remove,
+  suspendUser,
+  activateUser,
+  deleteUser,
+  updateUser,
+  bulkSuspendUsers,
+  bulkActivateUsers,
+  bulkDeleteUsers,
+};

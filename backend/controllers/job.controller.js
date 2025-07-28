@@ -1,86 +1,268 @@
-import Job from '../models/job.model.js'
-import errorHandler from './error.controller.js'
-import extend from 'lodash/extend.js'
+import Job from "../models/job.model.js";
+import errorHandler from "./error.controller.js";
+import extend from "lodash/extend.js";
 
-// Create a new job post
-const create = async (req, res) => {
-  const job = new Job(req.body)
+// GET /api/jobs
+export const list = async (req, res) => {
   try {
-    await job.save()
-    return res.status(200).json({ message: 'Job posted successfully!' })
+    const jobs = await Job.find({});
+    res.json(jobs);
   } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
+    return res.status(400).json({
+      error: "Could not retrieve jobs",
+    });
   }
-}
+};
 
-// List all jobs
-const list = async (req, res) => {
+// GET /api/jobs/:jobId
+export const read = async (req, res) => {
   try {
-    const jobs = await Job.find()
-      .populate('postedBy', 'name company')
-      .sort('-created')
-    res.json(jobs)
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
-
-// Find job by ID
-const jobByID = async (req, res, next, id) => {
-  try {
-    const job = await Job.findById(id).populate('postedBy', 'name company')
+    const job = await Job.findById(req.params.jobId);
     if (!job) {
-      return res.status(404).json({ error: 'Job not found' })
+      return res.status(404).json({
+        error: "Job not found",
+      });
     }
-    req.job = job
-    next()
+    res.json(job);
   } catch (err) {
-    return res.status(400).json({ error: 'Could not retrieve job' })
+    return res.status(400).json({
+      error: "Could not retrieve job",
+    });
   }
-}
+};
 
-// Read job details
-const read = (req, res) => {
-  return res.json(req.job)
-}
-
-// Update job post
-const update = async (req, res) => {
+// POST /api/jobs
+export const create = async (req, res) => {
   try {
-    let job = req.job
-    job = extend(job, req.body)
-    job.updated = Date.now()
-    await job.save()
-    res.json(job)
+    const job = new Job(req.body);
+    await job.save();
+    res.json(job);
   } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
+    return res.status(400).json({
+      error: "Could not create job",
+    });
   }
-}
+};
 
-// Delete job post
-const remove = async (req, res) => {
+// PUT /api/jobs/:jobId
+export const update = async (req, res) => {
   try {
-    const job = req.job
-    const deleted = await job.deleteOne()
-    res.json(deleted)
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
+    const job = await Job.findByIdAndUpdate(
+      req.params.jobId,
+      { $set: req.body },
+      { new: true }
+    );
 
-// Apply to a job
-const apply = async (req, res) => {
-  try {
-    const job = await Job.findById(req.body.jobId)
     if (!job) {
-      return res.status(404).json({ error: 'Job not found' })
+      return res.status(404).json({
+        error: "Job not found",
+      });
     }
-    job.applicants.push(req.body.userId)
-    await job.save()
-    res.json({ message: 'Application submitted' })
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
 
-export default { create, list, jobByID, read, update, remove, apply }
+    res.json(job);
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not update job",
+    });
+  }
+};
+
+// DELETE /api/jobs/:jobId
+export const remove = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndDelete(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+    res.json({ message: "Job deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete job",
+    });
+  }
+};
+
+// Admin Job Management Methods
+
+// POST /api/admin/jobs/:jobId/approve
+export const approveJob = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndUpdate(
+      req.params.jobId,
+      { $set: { status: "active" } },
+      { new: true }
+    );
+
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json({ message: "Job approved successfully", job });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not approve job",
+    });
+  }
+};
+
+// POST /api/admin/jobs/:jobId/reject
+export const rejectJob = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndUpdate(
+      req.params.jobId,
+      { $set: { status: "rejected" } },
+      { new: true }
+    );
+
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json({ message: "Job rejected successfully", job });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not reject job",
+    });
+  }
+};
+
+// POST /api/admin/jobs/:jobId/delete
+export const deleteJob = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndDelete(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+    res.json({ message: "Job deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete job",
+    });
+  }
+};
+
+// PUT /api/admin/jobs/:jobId/update
+export const updateJob = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndUpdate(
+      req.params.jobId,
+      { $set: req.body },
+      { new: true }
+    );
+
+    if (!job) {
+      return res.status(404).json({
+        error: "Job not found",
+      });
+    }
+
+    res.json({ message: "Job updated successfully", job });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not update job",
+    });
+  }
+};
+
+// Bulk Job Actions
+
+// POST /api/admin/jobs/bulk/approve
+export const bulkApproveJobs = async (req, res) => {
+  try {
+    const { jobIds } = req.body;
+
+    if (!jobIds || !Array.isArray(jobIds)) {
+      return res.status(400).json({
+        error: "Job IDs array is required",
+      });
+    }
+
+    const result = await Job.updateMany(
+      { _id: { $in: jobIds } },
+      { $set: { status: "active" } }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} jobs approved successfully`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not approve jobs",
+    });
+  }
+};
+
+// POST /api/admin/jobs/bulk/reject
+export const bulkRejectJobs = async (req, res) => {
+  try {
+    const { jobIds } = req.body;
+
+    if (!jobIds || !Array.isArray(jobIds)) {
+      return res.status(400).json({
+        error: "Job IDs array is required",
+      });
+    }
+
+    const result = await Job.updateMany(
+      { _id: { $in: jobIds } },
+      { $set: { status: "rejected" } }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} jobs rejected successfully`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not reject jobs",
+    });
+  }
+};
+
+// POST /api/admin/jobs/bulk/delete
+export const bulkDeleteJobs = async (req, res) => {
+  try {
+    const { jobIds } = req.body;
+
+    if (!jobIds || !Array.isArray(jobIds)) {
+      return res.status(400).json({
+        error: "Job IDs array is required",
+      });
+    }
+
+    const result = await Job.deleteMany({ _id: { $in: jobIds } });
+
+    res.json({
+      message: `${result.deletedCount} jobs deleted successfully`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete jobs",
+    });
+  }
+};
+
+export default {
+  list,
+  read,
+  create,
+  update,
+  remove,
+  approveJob,
+  rejectJob,
+  deleteJob,
+  updateJob,
+  bulkApproveJobs,
+  bulkRejectJobs,
+  bulkDeleteJobs,
+};
