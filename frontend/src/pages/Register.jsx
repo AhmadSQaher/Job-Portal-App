@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User, Check } from "lucide-react";
 
-const Signup = () => {
+const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -12,7 +12,7 @@ const Signup = () => {
     username: "",
     password: "",
     confirmPassword: "",
-    role: "user",
+    role: "user", // Default role
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,6 +39,14 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
+      console.log("Sending registration data:", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+        role: formData.role,
+      });
+
       const response = await fetch("http://localhost:3000/api/users/create", {
         method: "POST",
         headers: {
@@ -53,15 +61,18 @@ const Signup = () => {
         }),
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (response.ok) {
         // Registration successful, redirect to login
-        navigate("/signin");
+        navigate("/login");
       } else {
         setError(data.error || "Registration failed");
       }
     } catch (err) {
+      console.error("Registration error:", err);
       setError("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -234,35 +245,20 @@ const Signup = () => {
 
             {/* Account Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Select account type:
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Account Type
               </label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: "user", label: "User" },
-                  { value: "employer", label: "Employer" },
-                  { value: "dev", label: "Developer/Admin" },
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                      formData.role === option.value
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="role"
-                      value={option.value}
-                      checked={formData.role === option.value}
-                      onChange={handleChange}
-                      className="sr-only"
-                    />
-                    <span className="text-sm font-medium">{option.label}</span>
-                  </label>
-                ))}
-              </div>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="user">Job Seeker</option>
+                <option value="employer">Employer</option>
+                <option value="dev">Developer</option>
+              </select>
             </div>
 
             {/* Terms and Conditions */}
@@ -297,12 +293,38 @@ const Signup = () => {
             </button>
           </form>
 
+          {/* Divider */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Login */}
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <span className="text-sm font-medium text-gray-700">Google</span>
+            </button>
+            <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <span className="text-sm font-medium text-gray-700">
+                LinkedIn
+              </span>
+            </button>
+          </div>
+
           {/* Sign In Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <Link
-                to="/signin"
+                to="/login"
                 className="font-medium text-blue-600 hover:text-blue-700"
               >
                 Sign in
@@ -315,4 +337,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Register;

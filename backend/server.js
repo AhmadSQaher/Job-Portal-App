@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import config from './config/config.js'
 import app from './server/express.js'
 import mongoose from 'mongoose'
@@ -5,19 +6,20 @@ import mongoose from 'mongoose'
 mongoose.Promise = global.Promise
 
 mongoose
-  .connect(config.mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
+  .connect(config.mongoUri)
   .then(() => {
     console.log('Connected to MongoDB')
+    console.log(`Database URI: ${config.mongoUri}`)
   })
-  .catch(() => {
-    throw new Error(`Unable to connect to database: ${config.mongoUri}`)
+  .catch((error) => {
+    console.error(`Unable to connect to database: ${config.mongoUri}`)
+    console.error(`Error details: ${error.message}`)
+    console.error('Please ensure MongoDB is running or check your connection string')
+    // Don't throw an error immediately, let the server start anyway
   })
 
-mongoose.connection.on('error', () => {
-  console.error('MongoDB connection error')
+mongoose.connection.on('error', (error) => {
+  console.error('MongoDB connection error:', error.message)
 })
 
 // Optional welcome route (you could remove this if duplicated in express.js)
