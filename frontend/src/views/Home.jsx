@@ -3,7 +3,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Users, Building2, TrendingUp } from "lucide-react";
-import Logo from "../components/Logo";
 
 export default function Home() {
   const stats = [

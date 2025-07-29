@@ -18,7 +18,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import SplineEmbed from "../components/SplineEmbed";
-import Logo from "../components/Logo";
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
