@@ -27,7 +27,7 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 className="mb-8"
               >
-                <Logo size="lg" />
+                <img src="LINX Logo.webp" alt="LINX Logo" style={{ height: 64 }} />
               </motion.div>
 
               <motion.h1

@@ -11,7 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
 } from "lucide-react";
-import Logo from "./Logo";
+// import Logo from "./Logo";
 import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
@@ -35,7 +35,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/">
-            <Logo size="md" />
+            <img src="LINX Logo.webp" alt="LINX Logo" style={{ height: 64 }} />
           </Link>
 
           {/* Desktop Navigation */}
