@@ -5,6 +5,7 @@ const router = express.Router();
 
 // Basic CRUD routes
 router.get("/", userCtrl.list);
+router.post("/create", userCtrl.create);
 router.get("/:userId", userCtrl.read);
 router.put("/:userId", userCtrl.update);
 router.delete("/:userId", userCtrl.remove);

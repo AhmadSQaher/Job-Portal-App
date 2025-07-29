@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Building2,
@@ -8,9 +9,18 @@ import {
   Users,
   FileText,
   Send,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const PostJob = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -31,11 +41,106 @@ const PostJob = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Job posted:", formData);
-    // Here you would typically send the data to your API
+    setError("");
+    setSuccess(false);
+    setIsLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("You must be logged in to post a job");
+        navigate("/login");
+        return;
+      }
+
+      // Prepare job data for backend
+      const jobData = {
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        category: formData.type,
+        company: formData.company,
+        salary: formData.salary,
+        experience: formData.experience,
+        requirements: formData.requirements,
+        benefits: formData.benefits,
+        postedBy: user._id, // Add the user ID who's posting
+      };
+
+      console.log("📤 Sending job data:", jobData);
+
+      const response = await fetch("http://localhost:3000/api/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(jobData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+        console.log("✅ Job posted successfully:", data);
+
+        // Reset form
+        setFormData({
+          title: "",
+          company: "",
+          location: "",
+          type: "full-time",
+          salary: "",
+          experience: "",
+          description: "",
+          requirements: "",
+          benefits: "",
+        });
+
+        // Show success message and redirect after 2 seconds
+        setTimeout(() => {
+          navigate("/employer/dashboard");
+        }, 2000);
+      } else {
+        setError(data.error || "Failed to post job");
+        console.error("❌ Job posting failed:", data);
+      }
+    } catch (err) {
+      console.error("❌ Error posting job:", err);
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Check if user is employer
+  if (!user || user.role !== "employer") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 max-w-md">
+          <div className="text-center">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Access Denied
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Only employers can post jobs. Please log in with an employer
+              account.
+            </p>
+            <button
+              onClick={() => navigate("/login")}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -53,6 +158,36 @@ const PostJob = () => {
             Fill out the form below to post your job listing
           </p>
         </motion.div>
+
+        {/* Success Message */}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6"
+          >
+            <div className="flex items-center">
+              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+              <span className="text-green-800 font-medium">
+                Job posted successfully! Redirecting to dashboard...
+              </span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+          >
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+              <span className="text-red-800">{error}</span>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -72,7 +207,8 @@ const PostJob = () => {
                 value={formData.title}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 placeholder="e.g., Senior Frontend Developer"
               />
             </div>
@@ -88,7 +224,8 @@ const PostJob = () => {
                 value={formData.company}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 placeholder="e.g., TechCorp"
               />
             </div>
@@ -104,7 +241,8 @@ const PostJob = () => {
                 value={formData.location}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 placeholder="e.g., San Francisco, CA"
               />
             </div>
@@ -119,7 +257,8 @@ const PostJob = () => {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 >
                   <option value="full-time">Full-time</option>
                   <option value="part-time">Part-time</option>
@@ -137,7 +276,8 @@ const PostJob = () => {
                   name="salary"
                   value={formData.salary}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                   placeholder="e.g., $80k - $120k"
                 />
               </div>
@@ -152,7 +292,8 @@ const PostJob = () => {
                 name="experience"
                 value={formData.experience}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               >
                 <option value="">Select experience level</option>
                 <option value="entry">Entry Level</option>
@@ -172,8 +313,9 @@ const PostJob = () => {
                 value={formData.description}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
                 rows={6}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 placeholder="Describe the role, responsibilities, and what you're looking for..."
               />
             </div>
@@ -187,8 +329,9 @@ const PostJob = () => {
                 name="requirements"
                 value={formData.requirements}
                 onChange={handleChange}
+                disabled={isLoading}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 placeholder="List the key requirements and qualifications..."
               />
             </div>
@@ -202,8 +345,9 @@ const PostJob = () => {
                 name="benefits"
                 value={formData.benefits}
                 onChange={handleChange}
+                disabled={isLoading}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 placeholder="List the benefits and perks you offer..."
               />
             </div>
@@ -212,10 +356,20 @@ const PostJob = () => {
             <div className="pt-6">
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                <Send className="w-5 h-5 mr-2" />
-                Post Job
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Posting Job...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5 mr-2" />
+                    Post Job
+                  </>
+                )}
               </button>
             </div>
           </form>

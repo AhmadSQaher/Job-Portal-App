@@ -239,9 +239,25 @@ export const bulkDeleteUsers = async (req, res) => {
   }
 };
 
+// POST /api/users/create
+export const create = async (req, res) => {
+  try {
+    const user = new User(req.body);
+    await user.save();
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json(userResponse);
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not create user",
+    });
+  }
+};
+
 export default {
   list,
   read,
+  create,
   update,
   remove,
   suspendUser,
