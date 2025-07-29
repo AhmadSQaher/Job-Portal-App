@@ -1,75 +1,268 @@
-import Employer from '../models/employer.model.js'
-import extend from 'lodash/extend.js'
-import errorHandler from './error.controller.js'
+import Employer from "../models/employer.model.js";
+import extend from "lodash/extend.js";
+import errorHandler from "./error.controller.js";
 
-// Create a new employer
-const create = async (req, res) => {
-  const employer = new Employer(req.body)
+// GET /api/employers
+export const list = async (req, res) => {
   try {
-    await employer.save()
-    return res.status(200).json({ message: 'Employer account created successfully!' })
+    const employers = await Employer.find({});
+    res.json(employers);
   } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
+    return res.status(400).json({
+      error: "Could not retrieve employers",
+    });
   }
-}
+};
 
-// List all employers (admin-only)
-const list = async (req, res) => {
+// GET /api/employers/:employerId
+export const read = async (req, res) => {
   try {
-    const employers = await Employer.find().select('name email company created updated')
-    res.json(employers)
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
-
-// Find employer by ID
-const employerByID = async (req, res, next, id) => {
-  try {
-    const employer = await Employer.findById(id)
+    const employer = await Employer.findById(req.params.employerId);
     if (!employer) {
-      return res.status(404).json({ error: 'Employer not found' })
+      return res.status(404).json({
+        error: "Employer not found",
+      });
     }
-    req.profile = employer
-    next()
+    res.json(employer);
   } catch (err) {
-    return res.status(400).json({ error: 'Could not retrieve employer' })
+    return res.status(400).json({
+      error: "Could not retrieve employer",
+    });
   }
-}
+};
 
-// Read employer profile
-const read = (req, res) => {
-  req.profile.hashed_password = undefined
-  req.profile.salt = undefined
-  return res.json(req.profile)
-}
-
-// Update employer profile
-const update = async (req, res) => {
+// POST /api/employers
+export const create = async (req, res) => {
   try {
-    let employer = req.profile
-    employer = extend(employer, req.body)
-    employer.updated = Date.now()
-    await employer.save()
-    employer.hashed_password = undefined
-    employer.salt = undefined
-    res.json(employer)
+    const employer = new Employer(req.body);
+    await employer.save();
+    res.json(employer);
   } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
+    return res.status(400).json({
+      error: "Could not create employer",
+    });
   }
-}
+};
 
-// Delete employer profile
-const remove = async (req, res) => {
+// PUT /api/employers/:employerId
+export const update = async (req, res) => {
   try {
-    const employer = req.profile
-    const deleted = await employer.deleteOne()
-    deleted.hashed_password = undefined
-    deleted.salt = undefined
-    res.json(deleted)
-  } catch (err) {
-    return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
-  }
-}
+    const employer = await Employer.findByIdAndUpdate(
+      req.params.employerId,
+      { $set: req.body },
+      { new: true }
+    );
 
-export default { create, list, employerByID, read, update, remove }
+    if (!employer) {
+      return res.status(404).json({
+        error: "Employer not found",
+      });
+    }
+
+    res.json(employer);
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not update employer",
+    });
+  }
+};
+
+// DELETE /api/employers/:employerId
+export const remove = async (req, res) => {
+  try {
+    const employer = await Employer.findByIdAndDelete(req.params.employerId);
+    if (!employer) {
+      return res.status(404).json({
+        error: "Employer not found",
+      });
+    }
+    res.json({ message: "Employer deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete employer",
+    });
+  }
+};
+
+// Admin Employer Management Methods
+
+// POST /api/admin/employers/:employerId/verify
+export const verifyEmployer = async (req, res) => {
+  try {
+    const employer = await Employer.findByIdAndUpdate(
+      req.params.employerId,
+      { $set: { verified: true } },
+      { new: true }
+    );
+
+    if (!employer) {
+      return res.status(404).json({
+        error: "Employer not found",
+      });
+    }
+
+    res.json({ message: "Employer verified successfully", employer });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not verify employer",
+    });
+  }
+};
+
+// POST /api/admin/employers/:employerId/suspend
+export const suspendEmployer = async (req, res) => {
+  try {
+    const employer = await Employer.findByIdAndUpdate(
+      req.params.employerId,
+      { $set: { status: "suspended" } },
+      { new: true }
+    );
+
+    if (!employer) {
+      return res.status(404).json({
+        error: "Employer not found",
+      });
+    }
+
+    res.json({ message: "Employer suspended successfully", employer });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not suspend employer",
+    });
+  }
+};
+
+// POST /api/admin/employers/:employerId/activate
+export const activateEmployer = async (req, res) => {
+  try {
+    const employer = await Employer.findByIdAndUpdate(
+      req.params.employerId,
+      { $set: { status: "active" } },
+      { new: true }
+    );
+
+    if (!employer) {
+      return res.status(404).json({
+        error: "Employer not found",
+      });
+    }
+
+    res.json({ message: "Employer activated successfully", employer });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not activate employer",
+    });
+  }
+};
+
+// POST /api/admin/employers/:employerId/delete
+export const deleteEmployer = async (req, res) => {
+  try {
+    const employer = await Employer.findByIdAndDelete(req.params.employerId);
+    if (!employer) {
+      return res.status(404).json({
+        error: "Employer not found",
+      });
+    }
+    res.json({ message: "Employer deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete employer",
+    });
+  }
+};
+
+// Bulk Employer Actions
+
+// POST /api/admin/employers/bulk/verify
+export const bulkVerifyEmployers = async (req, res) => {
+  try {
+    const { employerIds } = req.body;
+
+    if (!employerIds || !Array.isArray(employerIds)) {
+      return res.status(400).json({
+        error: "Employer IDs array is required",
+      });
+    }
+
+    const result = await Employer.updateMany(
+      { _id: { $in: employerIds } },
+      { $set: { verified: true } }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} employers verified successfully`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not verify employers",
+    });
+  }
+};
+
+// POST /api/admin/employers/bulk/suspend
+export const bulkSuspendEmployers = async (req, res) => {
+  try {
+    const { employerIds } = req.body;
+
+    if (!employerIds || !Array.isArray(employerIds)) {
+      return res.status(400).json({
+        error: "Employer IDs array is required",
+      });
+    }
+
+    const result = await Employer.updateMany(
+      { _id: { $in: employerIds } },
+      { $set: { status: "suspended" } }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} employers suspended successfully`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not suspend employers",
+    });
+  }
+};
+
+// POST /api/admin/employers/bulk/delete
+export const bulkDeleteEmployers = async (req, res) => {
+  try {
+    const { employerIds } = req.body;
+
+    if (!employerIds || !Array.isArray(employerIds)) {
+      return res.status(400).json({
+        error: "Employer IDs array is required",
+      });
+    }
+
+    const result = await Employer.deleteMany({ _id: { $in: employerIds } });
+
+    res.json({
+      message: `${result.deletedCount} employers deleted successfully`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: "Could not delete employers",
+    });
+  }
+};
+
+export default {
+  list,
+  read,
+  create,
+  update,
+  remove,
+  verifyEmployer,
+  suspendEmployer,
+  activateEmployer,
+  deleteEmployer,
+  bulkVerifyEmployers,
+  bulkSuspendEmployers,
+  bulkDeleteEmployers,
+};
