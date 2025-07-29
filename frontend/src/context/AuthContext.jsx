@@ -10,10 +10,12 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log(
-      "🔍 AuthContext: Checking token on mount:",
-      token ? "exists" : "none"
-    );
+    if (import.meta.env.DEV) {
+      console.log(
+        "🔍 AuthContext: Checking token on mount:",
+        token ? "exists" : "none"
+      );
+    }
 
     if (token) {
       fetch(`${API_BASE}/auth/me`, {
@@ -44,7 +46,9 @@ export default function AuthProvider({ children }) {
           setUser(null);
         });
     } else {
-      console.log("🔍 AuthContext: No token found, user is null");
+      if (import.meta.env.DEV) {
+        console.log("🔍 AuthContext: No token found, user is null");
+      }
       setUser(null);
     }
   }, []);
@@ -57,7 +61,9 @@ export default function AuthProvider({ children }) {
     });
 
     const data = await res.json();
-    console.log("🔐 Signin response:", data);
+    if (import.meta.env.DEV) {
+      console.log("🔐 Signin response:", data);
+    }
 
     if (data.token) {
       localStorage.setItem("token", data.token);

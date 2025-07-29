@@ -10,7 +10,9 @@ const SplineEmbed = () => {
         const { default: Spline } = await import("@splinetool/react-spline");
         setSplineComponent(() => Spline);
       } catch (error) {
-        console.error("Failed to load Spline:", error);
+        if (import.meta.env.DEV) {
+          console.error("Failed to load Spline:", error);
+        }
         setHasError(true);
       }
     };

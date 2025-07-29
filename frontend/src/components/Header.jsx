@@ -30,7 +30,9 @@ const Header = () => {
     };
 
     const dashboardLink = getDashboardLink();
-    console.log("🔗 Dashboard link for user:", user?.role, "->", dashboardLink);
+    if (import.meta.env.DEV) {
+      console.log("🔗 Dashboard link for user:", user?.role, "->", dashboardLink);
+    }
 
     return [
       { name: "Find Jobs", href: "/jobs", icon: Search },

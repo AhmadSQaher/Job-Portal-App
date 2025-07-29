@@ -9,80 +9,80 @@ const router = express.Router();
 
 // Admin-only access to view everything
 router
-  .route("/api/admin/users")
+  .route("/users")
   .get(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.list);
 
 router
-  .route("/api/admin/employers")
+  .route("/employers")
   .get(authCtrl.requireSignin, checkRole(["dev"]), employerCtrl.list);
 
 router
-  .route("/api/admin/jobs")
+  .route("/jobs")
   .get(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.list);
 
 // User Management Routes
 router
-  .route("/api/admin/users/:userId/suspend")
+  .route("/users/:userId/suspend")
   .post(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.suspendUser);
 
 router
-  .route("/api/admin/users/:userId/activate")
+  .route("/users/:userId/activate")
   .post(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.activateUser);
 
 router
-  .route("/api/admin/users/:userId/delete")
+  .route("/users/:userId/delete")
   .post(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.deleteUser);
 
 router
-  .route("/api/admin/users/:userId/update")
+  .route("/users/:userId/update")
   .put(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.updateUser);
 
 // Bulk User Actions
 router
-  .route("/api/admin/users/bulk/suspend")
+  .route("/users/bulk/suspend")
   .post(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.bulkSuspendUsers);
 
 router
-  .route("/api/admin/users/bulk/activate")
+  .route("/users/bulk/activate")
   .post(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.bulkActivateUsers);
 
 router
-  .route("/api/admin/users/bulk/delete")
+  .route("/users/bulk/delete")
   .post(authCtrl.requireSignin, checkRole(["dev"]), userCtrl.bulkDeleteUsers);
 
 // Job Management Routes
 router
-  .route("/api/admin/jobs/:jobId/approve")
+  .route("/jobs/:jobId/approve")
   .post(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.approveJob);
 
 router
-  .route("/api/admin/jobs/:jobId/reject")
+  .route("/jobs/:jobId/reject")
   .post(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.rejectJob);
 
 router
-  .route("/api/admin/jobs/:jobId/delete")
+  .route("/jobs/:jobId/delete")
   .post(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.deleteJob);
 
 router
-  .route("/api/admin/jobs/:jobId/update")
+  .route("/jobs/:jobId/update")
   .put(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.updateJob);
 
 // Bulk Job Actions
 router
-  .route("/api/admin/jobs/bulk/approve")
+  .route("/jobs/bulk/approve")
   .post(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.bulkApproveJobs);
 
 router
-  .route("/api/admin/jobs/bulk/reject")
+  .route("/jobs/bulk/reject")
   .post(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.bulkRejectJobs);
 
 router
-  .route("/api/admin/jobs/bulk/delete")
+  .route("/jobs/bulk/delete")
   .post(authCtrl.requireSignin, checkRole(["dev"]), jobCtrl.bulkDeleteJobs);
 
 // Employer Management Routes
 router
-  .route("/api/admin/employers/:employerId/verify")
+  .route("/employers/:employerId/verify")
   .post(
     authCtrl.requireSignin,
     checkRole(["dev"]),
@@ -90,7 +90,7 @@ router
   );
 
 router
-  .route("/api/admin/employers/:employerId/suspend")
+  .route("/employers/:employerId/suspend")
   .post(
     authCtrl.requireSignin,
     checkRole(["dev"]),
@@ -98,7 +98,7 @@ router
   );
 
 router
-  .route("/api/admin/employers/:employerId/delete")
+  .route("/employers/:employerId/delete")
   .post(
     authCtrl.requireSignin,
     checkRole(["dev"]),
@@ -107,19 +107,19 @@ router
 
 // System Management Routes
 router
-  .route("/api/admin/system/backup")
+  .route("/system/backup")
   .post(authCtrl.requireSignin, checkRole(["dev"]), (req, res) => {
     res.json({ message: "Backup created successfully" });
   });
 
 router
-  .route("/api/admin/system/restart")
+  .route("/system/restart")
   .post(authCtrl.requireSignin, checkRole(["dev"]), (req, res) => {
     res.json({ message: "Services restarted successfully" });
   });
 
 router
-  .route("/api/admin/system/stats")
+  .route("/system/stats")
   .get(authCtrl.requireSignin, checkRole(["dev"]), (req, res) => {
     res.json({
       totalUsers: 0,

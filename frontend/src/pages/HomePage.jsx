@@ -17,7 +17,9 @@ import {
   Star,
   ArrowRight,
 } from "lucide-react";
-import SplineEmbed from "../components/SplineEmbed";
+
+// Lazy load Spline component to prevent LCP blocking
+const SplineEmbed = React.lazy(() => import("../components/SplineEmbed"));
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,56 +81,52 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20 relative overflow-hidden">
+      <section className="hero-section bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left side - Text content */}
             <div className="text-left max-w-2xl">
-              {/* Logo */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="mb-8"
-              >
-                <img src="LINX Logo.webp" alt="LINX Logo" style={{ height: 64 }} />
-              </motion.div>
+              {/* Logo - Static for immediate render */}
+              <div className="mb-8">
+                <img 
+                  src="LINX Logo.webp" 
+                  alt="LINX Logo" 
+                  style={{ height: 64 }}
+                  loading="eager"
+                  fetchpriority="high"
+                />
+              </div>
 
-              <motion.h1
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+              {/* Critical LCP Element - Static for immediate visibility */}
+              <h1
+                className="lcp-critical text-4xl md:text-6xl font-bold mb-6 leading-tight"
+                style={{ 
+                  opacity: 1,
+                  transform: 'none',
+                  willChange: 'auto',
+                  animation: 'none'
+                }}
               >
                 Find Your Dream Job
                 <span className="block text-blue-200">Today</span>
-              </motion.h1>
+              </h1>
 
-              <motion.p
-                className="text-lg text-blue-100 mb-8"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
+              {/* Supporting text - Static for immediate visibility */}
+              <p className="text-lg text-blue-100 mb-8">
                 Connecting talent with opportunity
-              </motion.p>
+              </p>
 
-              <motion.p
-                className="text-xl md:text-2xl text-blue-100 mb-12 leading-relaxed"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
+              <p className="text-xl md:text-2xl text-blue-100 mb-12 leading-relaxed">
                 Discover thousands of job opportunities with all the information
                 you need. Its your future.
-              </motion.p>
+              </p>
 
-              {/* Search Bar */}
+              {/* Search Bar - Delayed animation after LCP */}
               <motion.div
                 className="bg-white rounded-xl p-2 shadow-lg mb-8"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0.8, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
+                transition={{ duration: 0.4, delay: 0.8 }}
               >
                 <div className="flex flex-col md:flex-row gap-2">
                   <div className="flex-1 relative">
@@ -157,12 +155,12 @@ const HomePage = () => {
                 </div>
               </motion.div>
 
-              {/* Popular Searches */}
+              {/* Popular Searches - Delayed to not block LCP */}
               <motion.div
                 className="flex flex-wrap gap-2"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0.8, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.0 }}
+                transition={{ duration: 0.3, delay: 1.2 }}
               >
                 <span className="text-blue-200 text-sm">Popular:</span>
                 {[
@@ -181,14 +179,22 @@ const HomePage = () => {
               </motion.div>
             </div>
 
-            {/* Right side - 3D Robot */}
+            {/* Right side - 3D Robot - Heavily delayed to not impact LCP */}
             <motion.div
               className="h-96 lg:h-[500px] relative"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              transition={{ duration: 0.8, delay: 2.0 }}
             >
-              <SplineEmbed />
+              <React.Suspense 
+                fallback={
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-6xl animate-pulse">🤖</div>
+                  </div>
+                }
+              >
+                <SplineEmbed />
+              </React.Suspense>
             </motion.div>
           </div>
         </div>

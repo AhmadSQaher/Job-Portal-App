@@ -1,20 +1,21 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "LINX Jobs",
+  "name": "LINX Job Portal - Find Jobs & Hire Talent",
   "icons": [
     {
-      "src": "LINX Logo.webp",
+      "src": "LINXLogo.webp",
       "type": "image/webp",
       "sizes": "192x192"
     },
     {
-      "src": "LINX Logo.webp",
+      "src": "LINXLogo.webp", 
       "type": "image/webp",
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#2563eb",
+  "background_color": "#f8fafc",
+  "description": "Find your next career opportunity or hire top talent with LINX Job Portal"
 }
