@@ -59,7 +59,7 @@ export function devCompression() {
         if (req.url && (
           req.url.includes('/src/pages/HomePage.jsx') ||
           req.url.includes('/src/index.css') ||
-          req.url.includes('/LINX Logo.webp')
+          req.url.includes('/LINXLogo.webp')
         )) {
           // Highest priority for LCP-critical resources
           res.setHeader('Cache-Control', 'public, max-age=3600');

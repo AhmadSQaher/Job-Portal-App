@@ -89,9 +89,11 @@ const HomePage = () => {
               {/* Logo - Static for immediate render */}
               <div className="mb-8">
                 <img 
-                  src="LINX Logo.webp" 
+                  src="/LINXLogo.webp" 
                   alt="LINX Logo" 
-                  style={{ height: 64 }}
+                  width="64"
+                  height="64"
+                  className="logo-optimized"
                   loading="eager"
                   fetchpriority="high"
                 />

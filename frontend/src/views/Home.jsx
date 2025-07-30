@@ -26,7 +26,15 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 className="mb-8"
               >
-                <img src="LINX Logo.webp" alt="LINX Logo" style={{ height: 64 }} />
+                          <Link to="/">
+                <img 
+                  src="/LINXLogo.webp" 
+                  alt="LINX Logo" 
+                  width="64"
+                  height="64"
+                  className="logo-optimized"
+                />
+              </Link>
               </motion.div>
 
               <motion.h1
