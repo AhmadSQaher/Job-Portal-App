@@ -13,6 +13,7 @@ import {
   Briefcase as JobType,
   GraduationCap as Experience,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const sampleJobs = [
   {
@@ -63,6 +64,58 @@ const JobListings = () => {
   const [jobs, setJobs] = useState(sampleJobs);
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
+  const [favoriteIds, setFavoriteIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('favoriteIds');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleToggleFavorite = (job) => {
+    if (!job) {
+      console.warn('Attempted to toggle favorite on undefined job');
+      return;
+    }
+    
+    // Use _id for MongoDB documents, fallback to id for sample data
+    const jobId = String(job._id || job.id);
+    if (!jobId) {
+      console.warn('Attempted to toggle favorite on job with no ID');
+      toast.error('Unable to favorite this job');
+      return;
+    }
+    
+    setFavoriteIds(prevIds => {
+      const isCurrentlyFavorited = prevIds.includes(jobId);
+      
+      if (isCurrentlyFavorited) {
+        toast.success('Removed from favorites');
+        return prevIds.filter(id => id !== jobId);
+      } else {
+        toast.success('Added to favorites');
+        return [...prevIds, jobId];
+      }
+    });
+  };
+
+  const isFavorite = (job) => {
+    if (!job) return false;
+    const jobId = String(job._id || job.id);
+    if (!jobId) return false;
+    return favoriteIds.includes(jobId);
+  };
+
+  // Save favorites to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('favoriteIds', JSON.stringify(favoriteIds));
+    } catch (error) {
+      console.error('Failed to save favorites:', error);
+    }
+  }, [favoriteIds]);
+
   const [filters, setFilters] = useState({
     category: "All",
     jobType: "All",
@@ -100,19 +153,7 @@ const JobListings = () => {
     fetchJobs();
   }, []);
 
-  // Fetch jobs when component mounts
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/jobs");
-        const data = await response.json();
-        setJobs(data);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      }
-    };
-    fetchJobs();
-  }, []);
+
 
   // Helper function to match salary range
   const matchSalaryRange = (jobSalary, filterRange) => {
@@ -169,38 +210,7 @@ const JobListings = () => {
     setCurrentPage(1);
   }, [searchQuery, location, filters]);
 
-  useEffect(() => {
-    const applyFilters = () => {
-      const filteredResults = jobs.filter(job => {
-        // Search filter
-        const searchMatch = 
-          job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-        // Location filter
-        const locationMatch = !location || job.location.toLowerCase().includes(location.toLowerCase());
-
-        // Category filter
-        const categoryMatch = filters.category === "All" || job.category === filters.category;
-
-        // Job type filter
-        const typeMatch = filters.jobType === "All" || job.type === filters.jobType;
-
-        // Experience level filter
-        const experienceMatch = filters.experienceLevel === "All" || job.experienceLevel === filters.experienceLevel;
-
-        // Salary range filter
-        const salaryMatch = filters.salaryRange === "All" || matchSalaryRange(job.salary, filters.salaryRange);
-
-        return searchMatch && locationMatch && categoryMatch && typeMatch && experienceMatch && salaryMatch;
-      });
-
-      setFilteredJobs(filteredResults);
-    };
-
-    applyFilters();
-  }, [searchQuery, location, filters, jobs]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
@@ -385,12 +395,25 @@ const JobListings = () => {
                           <h3 className="text-lg font-semibold text-gray-900">
                             {job.title}
                           </h3>
-                          {job.featured && (
-                            <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
-                              <Star className="w-3 h-3 mr-1 fill-current" />
-                              Featured
-                            </span>
-                          )}
+                          <div className="flex items-center space-x-2">
+                            {job.featured && (
+                              <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                <Star className="w-3 h-3 mr-1 fill-current" />
+                                Featured
+                              </span>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleToggleFavorite(job);
+                              }}
+                              className={`p-1 rounded-full hover:bg-gray-100 transition-colors ${
+                                isFavorite(job) ? 'text-red-500' : 'text-gray-400'
+                              }`}
+                            >
+                              <Star className={`w-5 h-5 ${isFavorite(job) ? 'fill-current' : ''}`} />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-gray-600 mb-2">{job.company}</p>
                         <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
@@ -444,19 +467,22 @@ const JobListings = () => {
                   >
                     Previous
                   </button>
-                  {[...Array(Math.ceil(filteredJobs.length / jobsPerPage))].map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`px-3 py-2 rounded-lg ${
-                        currentPage === i + 1
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                  {Array.from(
+                    { length: Math.ceil(filteredJobs.length / jobsPerPage) },
+                    (_, i) => (
+                      <button
+                        key={`page-${i + 1}`}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`px-3 py-2 rounded-lg ${
+                          currentPage === i + 1
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    )
+                  )}
                   <button
                     onClick={() => setCurrentPage(prev => 
                       Math.min(Math.ceil(filteredJobs.length / jobsPerPage), prev + 1)

@@ -10,11 +10,12 @@ import {
   Building2,
   LayoutDashboard,
   LogOut,
+  Star,
 } from "lucide-react";
 // import Logo from "./Logo";
 import { useAuth } from "../context/AuthContext";
 
-const Header = () => {
+function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,10 +37,12 @@ const Header = () => {
 
     return [
       { name: "Find Jobs", href: "/jobs", icon: Search },
-      { name: "View Jobs", href: "/view-jobs", icon: Search },
       { name: "Companies", href: "/companies", icon: Building2 },
       ...(user
-        ? [{ name: "Dashboard", href: dashboardLink, icon: LayoutDashboard }]
+        ? [
+            { name: "Dashboard", href: dashboardLink, icon: LayoutDashboard },
+            { name: "Favorites", href: "/favorites", icon: Star }
+          ]
         : []),
     ];
   }, [user]);
@@ -51,14 +54,11 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/">
-            <img 
-              src="/LINXLogo.webp" 
-              alt="LINX Logo" 
-              width="64"
-              height="64"
-              className="logo-optimized"
-            />
+          <Link to="/" className="flex items-center">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-xl">L</span>
+            </div>
+            <span className="ml-2 text-xl font-bold text-gray-900">LINX</span>
           </Link>
 
           {/* Desktop Navigation */}

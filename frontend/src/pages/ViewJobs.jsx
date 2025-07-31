@@ -14,14 +14,20 @@ import {
   Bookmark,
 } from "lucide-react";
 
-const ViewJobs = () => {
-  const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+const Favorites = () => {
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const [savedJobs, setSavedJobs] = useState([]);
+  
+  const handleRemoveFavorite = (jobId) => {
+    setFavorites(prevFavorites => {
+      const newFavorites = prevFavorites.filter(job => job.id !== jobId);
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  };
 
   // Mock job data
   const mockJobs = [

@@ -2,10 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const API_BASE = "http://localhost:3000";
 
-const AuthContext = createContext();
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext(undefined);
 
-export default function AuthProvider({ children }) {
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
+
+function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -103,4 +110,6 @@ export default function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export default React.memo(AuthProvider);

@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
@@ -10,7 +11,7 @@ const Profile = lazy(() => import("./pages/Profile.jsx"));
 const PostJob = lazy(() => import("./pages/PostJob.jsx"));
 const JobDetails = lazy(() => import("./pages/JobDetails.jsx"));
 const JobListings = lazy(() => import("./pages/JobListings.jsx"));
-const ViewJobs = lazy(() => import("./pages/ViewJobs.jsx"));
+const Favorites = lazy(() => import("./pages/Favorites.jsx"));
 const Companies = lazy(() => import("./pages/Companies.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 
@@ -43,11 +44,13 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export default function App() {
+function App() {
   return (
-    <AuthProvider>
+    <React.StrictMode>
       <BrowserRouter>
-        <Layout>
+        <AuthProvider>
+          <Toaster position="top-right" />
+          <Layout>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               {/* New Routes */}
@@ -55,8 +58,12 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/jobs" element={<JobListings />} />
-              <Route path="/view-jobs" element={<ViewJobs />} />
               <Route path="/jobs/:id" element={<JobDetails />} />
+              <Route path="/favorites" element={
+                <PrivateRoute>
+                  <Favorites />
+                </PrivateRoute>
+              } />
               <Route path="/companies" element={<Companies />} />
               <Route path="/about" element={<About />} />
               <Route path="/css-test" element={<CSS_Test />} />
@@ -134,8 +141,11 @@ export default function App() {
               />
             </Routes>
           </Suspense>
-        </Layout>
+          </Layout>
+        </AuthProvider>
       </BrowserRouter>
-    </AuthProvider>
+    </React.StrictMode>
   );
 }
+
+export default App;
