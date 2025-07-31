@@ -2,6 +2,42 @@ import User from "../models/user.model.js";
 import extend from "lodash/extend.js";
 import errorHandler from "./error.controller.js";
 
+const create = async (req, res) => {
+  try {
+    const { username, email, password, name, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { username }] 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({
+        error: "User already exists with this email or username"
+      });
+    }
+
+    // Create new user
+    const user = new User({
+      username,
+      email,
+      password,
+      name,
+      role
+    });
+
+    await user.save();
+
+    // Return user without password
+    const userWithoutPassword = await User.findById(user._id).select("-password");
+    return res.status(201).json(userWithoutPassword);
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler.getErrorMessage(err)
+    });
+  }
+};
+
 // GET /api/users
 export const list = async (req, res) => {
   try {
@@ -241,7 +277,9 @@ export const bulkDeleteUsers = async (req, res) => {
 
 export default {
   list,
+  create,
   read,
+  list,
   update,
   remove,
   suspendUser,
