@@ -41,6 +41,15 @@ export default defineConfig({
     // Add bundle analyzer for production builds
     process.env.ANALYZE && analyzer()
   ].filter(Boolean),
+  resolve: {
+    alias: {
+      // Force all React imports to use the same version
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom')
+    },
+    // Ensure consistent module resolution
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+  },
   server: {
     https: {
       key: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-key.pem')),
@@ -68,20 +77,7 @@ export default defineConfig({
   build: {
     outDir: 'dist/app',
     minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-        passes: 2, // Multiple compression passes
-      },
-      mangle: {
-        safari10: true, // Safari 10 compatibility
-      },
-    },
-    // Optimize chunk sizes
-    chunkSizeWarningLimit: 1000,
-    // Enhanced rollup options for better splitting
+    // Add timestamp for cache busting
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -116,12 +112,25 @@ export default defineConfig({
             return 'components';
           }
         },
-        // Optimize file naming for caching
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        // Add timestamp to force cache invalidation
+        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`
       }
     },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+        passes: 2, // Multiple compression passes
+      },
+      mangle: {
+        safari10: true, // Safari 10 compatibility
+      },
+    },
+    // Optimize chunk sizes
+    chunkSizeWarningLimit: 1000,
     // Enable source maps for debugging
     sourcemap: false, // Disable in production for performance
     // Target modern browsers for better optimization
