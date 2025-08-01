@@ -66,6 +66,7 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: 'dist/app',
     minify: 'terser',
     terserOptions: {
       compress: {

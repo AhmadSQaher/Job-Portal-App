@@ -15,6 +15,7 @@ import adminRoutes from "../routes/admin.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const CURRENT_WORKING_DIR = process.cwd();
 
 const app = express();
 
@@ -27,14 +28,16 @@ app.use(cors({
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "http://localhost:5173"],
-      styleSrc: ["'self'", "'unsafe-inline'", "http://localhost:5173"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "http://localhost:5173"],
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrcElem: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "ws://localhost:5173"],
-      fontSrc: ["'self'", "data:", "http://localhost:5173"],
+      connectSrc: ["'self'", "https:", "wss:"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "http://localhost:5173"],
+      mediaSrc: ["'self'"],
       frameSrc: ["'self'"],
       workerSrc: ["'self'", "blob:"],
     },
@@ -97,6 +100,9 @@ app.use("/api/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/employers", employerRoutes);
 app.use("/api/admin", adminRoutes);
+
+// Serve built frontend files for deployment
+app.use(express.static(path.join(CURRENT_WORKING_DIR, "dist/app")));
 
 // Enhanced pre-compressed static file serving
 app.get('*.js', (req, res, next) => {
