@@ -75,12 +75,12 @@ export default defineConfig({
     }
   },
   css: {
-    // Ensure CSS is loaded properly to prevent layout shift
-    postcss: {
-      plugins: []
-    },
+    // Use PostCSS config for Tailwind processing
+    postcss: './postcss.config.js',
     preprocessorOptions: {
-      // Ensure proper CSS handling
+      css: {
+        charset: false
+      }
     },
     // Inline small CSS files to reduce requests
     codeSplit: false,
