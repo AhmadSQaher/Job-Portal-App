@@ -84,47 +84,31 @@ app.use("/auth", authRoutes);
 app.use("/api/employers", employerRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Enhanced pre-compressed static file serving
-app.get('*.js', (req, res, next) => {
-  const acceptEncoding = req.headers['accept-encoding'] || '';
-  
-  if (acceptEncoding.includes('br')) {
-    req.url = req.url + '.br';
-    res.set('Content-Encoding', 'br');
-    res.set('Content-Type', 'application/javascript; charset=UTF-8');
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-  } else if (acceptEncoding.includes('gzip')) {
-    req.url = req.url + '.gz';
-    res.set('Content-Encoding', 'gzip');
-    res.set('Content-Type', 'application/javascript; charset=UTF-8');
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+// Serve static files from the built React app with proper MIME types
+app.use(express.static(path.join(__dirname, '../../frontend/dist/app'), {
+  setHeaders: (res, filePath) => {
+    // Set proper MIME types for JavaScript files
+    if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    } else if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+    } else if (filePath.endsWith('.json')) {
+      res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+    }
+    // Set cache headers for static assets
+    if (filePath.includes('/assets/')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
   }
-  next();
-});
-
-app.get('*.css', (req, res, next) => {
-  const acceptEncoding = req.headers['accept-encoding'] || '';
-  
-  if (acceptEncoding.includes('br')) {
-    req.url = req.url + '.br';
-    res.set('Content-Encoding', 'br');
-    res.set('Content-Type', 'text/css; charset=UTF-8');
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-  } else if (acceptEncoding.includes('gzip')) {
-    req.url = req.url + '.gz';
-    res.set('Content-Encoding', 'gzip');
-    res.set('Content-Type', 'text/css; charset=UTF-8');
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-  next();
-});
-
-// Serve static files from the built React app
-app.use(express.static(path.join(__dirname, '../../frontend/dist/app')));
+}));
 
 // Handle React Router routes - serve index.html for all non-API routes
-// This MUST come last, after all API routes and error handling
+// This MUST come last, after all API routes and static file serving
 app.get('*', (req, res) => {
+  // Don't serve index.html for asset requests that weren't found
+  if (req.path.startsWith('/assets/')) {
+    return res.status(404).send('Asset not found');
+  }
   res.sendFile(path.join(__dirname, '../../frontend/dist/app/index.html'));
 });
 
