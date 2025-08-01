@@ -25,10 +25,11 @@ app.use(cors({
   optionsSuccessStatus: 200 // Legacy browsers support
 }));
 
-app.use(helmet({
-  contentSecurityPolicy: false, // Temporarily disable CSP for debugging
-  crossOriginEmbedderPolicy: false
-})); 
+// Temporarily remove helmet to debug deployment issues
+// app.use(helmet({
+//   contentSecurityPolicy: false, // Temporarily disable CSP for debugging
+//   crossOriginEmbedderPolicy: false
+// })); 
 
 app.use(compression({
   level: 9, // Maximum compression level for production
