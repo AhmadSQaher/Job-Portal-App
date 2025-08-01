@@ -31,7 +31,7 @@ const Favorites = () => {
         }
 
         // Fetch jobs from the API
-        const response = await fetch('http://localhost:3000/api/jobs');
+        const response = await fetch('/api/jobs');
         if (!response.ok) throw new Error('Failed to fetch jobs');
         
         const allJobs = await response.json();

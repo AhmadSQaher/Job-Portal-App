@@ -54,7 +54,7 @@ const PostJobTest = () => {
         benefits: formData.benefits,
       };
 
-      const response = await fetch('http://localhost:3000/api/jobs', {
+      const response = await fetch('/api/jobs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

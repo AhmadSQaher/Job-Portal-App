@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, memo } from "react";
 
-const API_BASE = "http://localhost:3000";
+// Use relative URLs for production compatibility
+const API_BASE = "";
 
 // Create context with proper initialization
 const AuthContext = createContext(null);
