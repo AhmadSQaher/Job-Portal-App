@@ -27,21 +27,23 @@ app.use(cors({
 
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       scriptSrcElem: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-      connectSrc: ["'self'", "https:", "wss:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      objectSrc: ["'none'"],
+      imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
+      connectSrc: ["'self'", "https:", "wss:", "data:"],
       mediaSrc: ["'self'"],
+      objectSrc: ["'none'"],
       frameSrc: ["'self'"],
       workerSrc: ["'self'", "blob:"],
       childSrc: ["'self'", "blob:"],
       manifestSrc: ["'self'"],
+      baseUri: ["'self'"],
     },
   },
   crossOriginEmbedderPolicy: false
@@ -136,7 +138,7 @@ app.get('*.css', (req, res, next) => {
 });
 
 // Serve static files with enhanced caching
-app.use(express.static(path.join(CURRENT_WORKING_DIR, "frontend/dist/app"), {
+app.use(express.static(path.join(__dirname, '../frontend/dist/app'), {
   maxAge: '1y',
   etag: true,
   lastModified: true,
@@ -153,7 +155,7 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
     return next();
   }
-  res.sendFile(path.join(CURRENT_WORKING_DIR, 'frontend/dist/app', 'index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/dist/app', 'index.html'));
 });
 
 // Default fallback
