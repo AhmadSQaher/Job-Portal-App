@@ -1,21 +1,25 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React from "react";
 
 const API_BASE = "http://localhost:3000";
 
-const AuthContext = createContext(undefined);
+// Create context with error handling
+const AuthContext = React.createContext ? React.createContext(null) : null;
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!AuthContext) {
+    throw new Error("React context not available");
+  }
+  const context = React.useContext(AuthContext);
+  if (context === null) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
 
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = React.useState(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const token = localStorage.getItem("token");
     if (import.meta.env.DEV) {
       console.log(
