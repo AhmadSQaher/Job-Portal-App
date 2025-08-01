@@ -140,10 +140,10 @@ export default defineConfig({
             return 'components';
           }
         },
-        // Add timestamp to force cache invalidation
-        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
-        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
-        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`
+        // Use content-based hashing for consistent deployments
+        chunkFileNames: `assets/[name]-[hash].js`,
+        entryFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`
       }
     },
     terserOptions: {
