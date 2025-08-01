@@ -18,9 +18,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// Lazy load Spline component to prevent LCP blocking
-const SplineEmbed = React.lazy(() => import("../components/SplineEmbed"));
-
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
@@ -188,15 +185,24 @@ const HomePage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 2.0 }}
             >
-              <React.Suspense 
-                fallback={
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-6xl animate-pulse">🤖</div>
-                  </div>
-                }
-              >
-                <SplineEmbed />
-              </React.Suspense>
+              {/* Simple, fast-loading hero image */}
+              <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
+                <div className="text-center">
+                  <img 
+                    src="/RobotImg.webp" 
+                    alt="LINX Job Portal - Find Your Dream Job"
+                    className="w-32 h-32 mx-auto mb-6 rounded-lg shadow-lg"
+                    style={{
+                      imageRendering: 'crisp-edges',
+                      objectFit: 'contain'
+                    }}
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Welcome to LINX</h3>
+                  <p className="text-gray-600">Your gateway to amazing career opportunities</p>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>

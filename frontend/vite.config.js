@@ -99,14 +99,6 @@ export default defineConfig({
               return 'framer-motion';
             }
             
-            // 3D/Graphics - these are typically large
-            if (id.includes('@splinetool/runtime')) {
-              return 'spline-runtime';
-            }
-            if (id.includes('@splinetool')) {
-              return 'spline-tools';
-            }
-            
             // UI libraries
             if (id.includes('lucide-react')) {
               return 'lucide-icons';
@@ -177,5 +169,7 @@ export default defineConfig({
     target: 'esnext',
     platform: 'browser',
     treeShaking: true
-  }
+  },
+  // Optimize image assets
+  assetsInclude: ['**/*.webp', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg']
 })
