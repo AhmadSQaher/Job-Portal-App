@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -61,9 +61,18 @@ const sampleJobs = [
 ];
 
 const JobListings = () => {
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState(sampleJobs);
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
+
+  // Effect to handle company parameter from URL
+  useEffect(() => {
+    const companyParam = searchParams.get('company');
+    if (companyParam) {
+      setSearchQuery(decodeURIComponent(companyParam));
+    }
+  }, [searchParams]);
   const [favoriteIds, setFavoriteIds] = useState(() => {
     try {
       const saved = localStorage.getItem('favoriteIds');
