@@ -131,8 +131,9 @@ export default defineConfig({
           if (id.includes('/components/')) {
             return 'components';
           }
+          // Keep context and hooks with components to avoid dependency issues
           if (id.includes('/context/') || id.includes('/hooks/')) {
-            return 'app-logic';
+            return 'components';
           }
         },
         // Add timestamp to force cache invalidation

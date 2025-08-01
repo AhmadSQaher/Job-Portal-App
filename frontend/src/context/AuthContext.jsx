@@ -1,15 +1,12 @@
-import React from "react";
+import { createContext, useContext, useState, useEffect, memo } from "react";
 
 const API_BASE = "http://localhost:3000";
 
-// Create context with error handling
-const AuthContext = React.createContext ? React.createContext(null) : null;
+// Create context with proper initialization
+const AuthContext = createContext(null);
 
 export function useAuth() {
-  if (!AuthContext) {
-    throw new Error("React context not available");
-  }
-  const context = React.useContext(AuthContext);
+  const context = useContext(AuthContext);
   if (context === null) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
@@ -17,9 +14,9 @@ export function useAuth() {
 }
 
 function AuthProvider({ children }) {
-  const [user, setUser] = React.useState(null);
+  const [user, setUser] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem("token");
     if (import.meta.env.DEV) {
       console.log(
@@ -116,4 +113,4 @@ function AuthProvider({ children }) {
   );
 };
 
-export default React.memo(AuthProvider);
+export default memo(AuthProvider);
