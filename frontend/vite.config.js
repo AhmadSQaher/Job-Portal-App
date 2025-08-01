@@ -81,35 +81,58 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor libraries
+          // Large libraries - split separately for better caching
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
+            // React ecosystem
+            if (id.includes('react-dom')) {
+              return 'react-dom';
+            }
+            if (id.includes('react') && !id.includes('react-router')) {
+              return 'react';
             }
             if (id.includes('react-router')) {
               return 'router';
             }
+            
+            // Animation libraries
             if (id.includes('framer-motion')) {
-              return 'animations';
+              return 'framer-motion';
+            }
+            
+            // 3D/Graphics - these are typically large
+            if (id.includes('@splinetool/runtime')) {
+              return 'spline-runtime';
             }
             if (id.includes('@splinetool')) {
-              return 'spline';
+              return 'spline-tools';
             }
+            
+            // UI libraries
             if (id.includes('lucide-react')) {
-              return 'icons';
+              return 'lucide-icons';
             }
             if (id.includes('@mui') || id.includes('@emotion')) {
-              return 'ui-libs';
+              return 'mui-system';
             }
-            // Other vendor libraries
+            
+            // Utility libraries
+            if (id.includes('lodash') || id.includes('date-fns') || id.includes('axios')) {
+              return 'utilities';
+            }
+            
+            // Other vendor libraries (smaller ones)
             return 'vendor';
           }
-          // Split by feature/page
+          
+          // Application code splitting
           if (id.includes('/pages/')) {
             return 'pages';
           }
           if (id.includes('/components/')) {
             return 'components';
+          }
+          if (id.includes('/context/') || id.includes('/hooks/')) {
+            return 'app-logic';
           }
         },
         // Add timestamp to force cache invalidation
@@ -129,8 +152,8 @@ export default defineConfig({
         safari10: true, // Safari 10 compatibility
       },
     },
-    // Optimize chunk sizes
-    chunkSizeWarningLimit: 1000,
+    // Optimize chunk sizes - set higher limit for 3D libraries like Spline
+    chunkSizeWarningLimit: 5000, // Increased to 5MB to accommodate large 3D graphics libraries like Spline
     // Enable source maps for debugging
     sourcemap: false, // Disable in production for performance
     // Target modern browsers for better optimization
