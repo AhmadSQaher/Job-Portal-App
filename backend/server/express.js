@@ -119,8 +119,8 @@ app.get('*.css', (req, res, next) => {
   next();
 });
 
-// Serve static files with enhanced caching
-app.use(express.static(path.join(__dirname, '../frontend/dist/app'), {
+// Serve static files from the frontend build directory
+app.use(express.static(path.join(__dirname, '../../frontend/dist/app'), {
   maxAge: '1y',
   etag: true,
   lastModified: true,
@@ -137,7 +137,7 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
     return next();
   }
-  res.sendFile(path.join(__dirname, '../frontend/dist/app', 'index.html'));
+  res.sendFile(path.join(__dirname, '../../frontend/dist/app', 'index.html'));
 });
 
 export default app;
