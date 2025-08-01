@@ -91,7 +91,7 @@ app.use("/api/employers", employerRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Serve static files from the built React app with proper MIME types
-app.use(express.static(path.join(__dirname, '../../frontend/dist/app'), {
+app.use(express.static(path.join(__dirname, '../frontend/dist/app'), {
   setHeaders: (res, filePath) => {
     // Set proper MIME types for JavaScript files
     if (filePath.endsWith('.js')) {
@@ -115,7 +115,7 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/assets/')) {
     return res.status(404).send('Asset not found');
   }
-  res.sendFile(path.join(__dirname, '../../frontend/dist/app/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/dist/app/index.html'));
 });
 
 export default app;
