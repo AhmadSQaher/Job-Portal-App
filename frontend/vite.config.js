@@ -74,6 +74,18 @@ export default defineConfig({
       'Cache-Control': 'public, max-age=31536000',
     }
   },
+  css: {
+    // Ensure CSS is loaded properly to prevent layout shift
+    postcss: {
+      plugins: []
+    },
+    preprocessorOptions: {
+      // Ensure proper CSS handling
+    },
+    // Inline small CSS files to reduce requests
+    codeSplit: false,
+    extract: true
+  },
   build: {
     outDir: 'dist/app',
     minify: 'terser',

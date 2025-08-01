@@ -96,10 +96,16 @@ app.use(express.static(path.join(__dirname, '../../frontend/dist/app'), {
     // Set proper MIME types for JavaScript files
     if (filePath.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    } else if (filePath.endsWith('.mjs')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
     } else if (filePath.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css; charset=UTF-8');
     } else if (filePath.endsWith('.json')) {
       res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+    } else if (filePath.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    } else if (filePath.endsWith('.svg')) {
+      res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
     }
     // Set cache headers for static assets
     if (filePath.includes('/assets/')) {
@@ -112,7 +118,8 @@ app.use(express.static(path.join(__dirname, '../../frontend/dist/app'), {
 // This MUST come last, after all API routes and static file serving
 app.get('*', (req, res) => {
   // Don't serve index.html for asset requests that weren't found
-  if (req.path.startsWith('/assets/')) {
+  if (req.path.startsWith('/assets/') || 
+      req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|json|txt)$/)) {
     return res.status(404).send('Asset not found');
   }
   res.sendFile(path.join(__dirname, '../../frontend/dist/app/index.html'));

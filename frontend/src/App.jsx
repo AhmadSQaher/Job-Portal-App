@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 
 // Lazy load pages for better performance
-const HomePage = lazy(() => import("./pages/HomePage.jsx"));
+const Home = lazy(() => import("./views/Home.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
 const Register = lazy(() => import("./pages/Register.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
@@ -16,7 +16,6 @@ const Companies = lazy(() => import("./pages/Companies.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 
 // Legacy Views (lazy loaded)
-const Home = lazy(() => import("./views/Home.jsx"));
 const Signup = lazy(() => import("./user/Signup.jsx"));
 const Signin = lazy(() => import("./views/auth/Signin.jsx"));
 const JobList = lazy(() => import("./job/JobList.jsx"));
@@ -54,7 +53,7 @@ function App() {
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               {/* New Routes */}
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/jobs" element={<JobListings />} />
@@ -102,8 +101,7 @@ function App() {
                 }
               />
 
-              {/* Legacy Routes (keeping for backward compatibility) */}
-              <Route path="/legacy" element={<Home />} />
+              {/* Legacy Routes (keeping for backward compatibility) */
               <Route path="/signup" element={<Signup />} />
               <Route path="/signin" element={<Signin />} />
               <Route path="/legacy/jobs" element={<JobList />} />
