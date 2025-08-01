@@ -50,95 +50,95 @@ function App() {
         <AuthProvider>
           <Toaster position="top-right" />
           <Layout>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              {/* New Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/jobs" element={<JobListings />} />
-              <Route path="/jobs/:id" element={<JobDetails />} />
-              <Route path="/favorites" element={
-                <PrivateRoute>
-                  <Favorites />
-                </PrivateRoute>
-              } />
-              <Route path="/companies" element={<Companies />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/css-test" element={<CSS_Test />} />
-              <Route path="/simple-css-test" element={<SimpleCSS_Test />} />
-              <Route path="/dashboard-test" element={<DashboardTest />} />
-              <Route path="/login-test" element={<LoginTest />} />
-              <Route path="/post-job-test" element={<PostJobTest />} />
-              <Route
-                path="/post-job-verification"
-                element={<PostJobVerification />}
-              />
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                {/* New Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/jobs" element={<JobListings />} />
+                <Route path="/jobs/:id" element={<JobDetails />} />
+                <Route path="/favorites" element={
+                  <PrivateRoute>
+                    <Favorites />
+                  </PrivateRoute>
+                } />
+                <Route path="/companies" element={<Companies />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/css-test" element={<CSS_Test />} />
+                <Route path="/simple-css-test" element={<SimpleCSS_Test />} />
+                <Route path="/dashboard-test" element={<DashboardTest />} />
+                <Route path="/login-test" element={<LoginTest />} />
+                <Route path="/post-job-test" element={<PostJobTest />} />
+                <Route
+                  path="/post-job-verification"
+                  element={<PostJobVerification />}
+                />
 
-              {/* Protected Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute role="user">
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute role="user">
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/post-job"
-                element={
-                  <PrivateRoute role="employer">
-                    <PostJob />
-                  </PrivateRoute>
-                }
-              />
+                {/* Protected Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute role="user">
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <PrivateRoute role="user">
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/post-job"
+                  element={
+                    <PrivateRoute role="employer">
+                      <PostJob />
+                    </PrivateRoute>
+                  }
+                />
 
-              {/* Legacy Routes (keeping for backward compatibility) */
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/signin" element={<Signin />} />
-              <Route path="/legacy/jobs" element={<JobList />} />
-              <Route
-                path="/user/dashboard"
-                element={
-                  <PrivateRoute role="user">
-                    <UserDashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/employer/dashboard"
-                element={
-                  <PrivateRoute role="employer">
-                    <EmployerDashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/employer/post"
-                element={
-                  <PrivateRoute role="employer">
-                    <JobPost />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/dev/dashboard"
-                element={
-                  <PrivateRoute role={["dev", "admin"]}>
-                    <DevDashboard />
-                  </PrivateRoute>
-                }
-              />
-            </Routes>
-          </Suspense>
+                {/* Legacy Routes (keeping for backward compatibility) */}
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/signin" element={<Signin />} />
+                <Route path="/legacy/jobs" element={<JobList />} />
+                <Route
+                  path="/user/dashboard"
+                  element={
+                    <PrivateRoute role="user">
+                      <UserDashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/employer/dashboard"
+                  element={
+                    <PrivateRoute role="employer">
+                      <EmployerDashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/employer/post"
+                  element={
+                    <PrivateRoute role="employer">
+                      <JobPost />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/dev/dashboard"
+                  element={
+                    <PrivateRoute role={["dev", "admin"]}>
+                      <DevDashboard />
+                    </PrivateRoute>
+                  }
+                />
+              </Routes>
+            </Suspense>
           </Layout>
         </AuthProvider>
       </BrowserRouter>
