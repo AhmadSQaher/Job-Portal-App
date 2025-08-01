@@ -20,11 +20,6 @@ mongoose.connection.on('error', () => {
   console.error('MongoDB connection error')
 })
 
-// Optional welcome route (you could remove this if duplicated in express.js)
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the LINX Job Portal API' })
-})
-
 // Launch the server
 app.listen(config.port, (err) => {
   if (err) {

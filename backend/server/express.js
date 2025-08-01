@@ -26,26 +26,7 @@ app.use(cors({
 }));
 
 app.use(helmet({
-  contentSecurityPolicy: {
-    useDefaults: false,
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      scriptSrcElem: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-      connectSrc: ["'self'", "https:", "wss:", "data:"],
-      mediaSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      frameSrc: ["'self'"],
-      workerSrc: ["'self'", "blob:"],
-      childSrc: ["'self'", "blob:"],
-      manifestSrc: ["'self'"],
-      baseUri: ["'self'"],
-    },
-  },
+  contentSecurityPolicy: false, // Temporarily disable CSP for debugging
   crossOriginEmbedderPolicy: false
 })); 
 
@@ -156,11 +137,6 @@ app.get('*', (req, res, next) => {
     return next();
   }
   res.sendFile(path.join(__dirname, '../frontend/dist/app', 'index.html'));
-});
-
-// Default fallback
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the LINX Job Portal API" });
 });
 
 export default app;
