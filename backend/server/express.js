@@ -56,8 +56,14 @@ app.use(compression({
 
 // Security and performance headers
 app.use((req, res, next) => {
+  // Prevent caching of HTML files to ensure fresh content
+  if (req.url.endsWith('.html') || req.url === '/' || !req.url.includes('.')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } 
   // Cache control for static assets
-  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
+  else if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (req.url.includes('/api/')) {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
