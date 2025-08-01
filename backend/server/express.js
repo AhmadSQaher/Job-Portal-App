@@ -32,7 +32,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      scriptSrcElem: ["'self'", "'unsafe-inline'"],
+      scriptSrcElem: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
       connectSrc: ["'self'", "https:", "wss:"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
@@ -40,6 +40,8 @@ app.use(helmet({
       mediaSrc: ["'self'"],
       frameSrc: ["'self'"],
       workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:"],
+      manifestSrc: ["'self'"],
     },
   },
   crossOriginEmbedderPolicy: false
@@ -70,9 +72,6 @@ app.use(compression({
 
 // Security and performance headers
 app.use((req, res, next) => {
-  // Enable HTTP/2 Server Push hints
-  res.setHeader('Link', '</assets/main.js>; rel=preload; as=script');
-  
   // Cache control for static assets
   if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -100,9 +99,6 @@ app.use("/api/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/employers", employerRoutes);
 app.use("/api/admin", adminRoutes);
-
-// Serve built frontend files for deployment
-app.use(express.static(path.join(CURRENT_WORKING_DIR, "dist/app")));
 
 // Enhanced pre-compressed static file serving
 app.get('*.js', (req, res, next) => {
@@ -140,7 +136,7 @@ app.get('*.css', (req, res, next) => {
 });
 
 // Serve static files with enhanced caching
-app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
+app.use(express.static(path.join(CURRENT_WORKING_DIR, "frontend/dist/app"), {
   maxAge: '1y',
   etag: true,
   lastModified: true,
@@ -157,7 +153,7 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
     return next();
   }
-  res.sendFile(path.join(__dirname, '../../frontend/dist', 'index.html'));
+  res.sendFile(path.join(CURRENT_WORKING_DIR, 'frontend/dist/app', 'index.html'));
 });
 
 // Default fallback
