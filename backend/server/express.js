@@ -119,25 +119,13 @@ app.get('*.css', (req, res, next) => {
   next();
 });
 
-// Serve static files from the frontend build directory
-app.use(express.static(path.join(__dirname, '../../frontend/dist/app'), {
-  maxAge: '1y',
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, path) => {
-    if (path.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'public, max-age=0');
-    }
-  }
-}));
+// Serve static files from the built React app
+app.use(express.static(path.join(__dirname, '../../frontend/dist/app')));
 
 // Handle React Router routes - serve index.html for all non-API routes
-app.get('*', (req, res, next) => {
-  // Skip API routes
-  if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
-    return next();
-  }
-  res.sendFile(path.join(__dirname, '../../frontend/dist/app', 'index.html'));
+// This MUST come last, after all API routes and error handling
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dist/app/index.html'));
 });
 
 export default app;
