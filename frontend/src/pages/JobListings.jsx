@@ -157,42 +157,82 @@ const JobListings = () => {
 
   // Helper function to match salary range
   const matchSalaryRange = (jobSalary, filterRange) => {
-    if (filterRange === "All") return true;
+    if (!jobSalary || filterRange === "All") return true;
     
-    const salary = parseInt(jobSalary.replace(/[^0-9]/g, ""));
-    const [min, max] = filterRange.split("-").map(s => parseInt(s));
-    
-    if (filterRange === "150k+") return salary >= 150000;
-    return salary >= min * 1000 && salary <= max * 1000;
+    try {
+      // Extract the first number found in the salary string
+      const salaryMatch = jobSalary.match(/\d+/);
+      if (!salaryMatch) return false;
+      
+      const salary = parseInt(salaryMatch[0]) * 1000; // Convert k to actual value
+      
+      if (filterRange === "150k+") return salary >= 150000;
+      
+      const [min, max] = filterRange.split("-").map(s => parseInt(s));
+      if (!min || !max) return true; // Invalid range format, don't filter
+      
+      return salary >= min * 1000 && salary <= max * 1000;
+    } catch (error) {
+      console.error('Error matching salary range:', error);
+      return true; // On error, don't filter out the job
+    }
   };
 
   // Filter jobs based on search query and filters
   useEffect(() => {
     const filteredResults = jobs.filter(job => {
+      if (!job) return false;
+
       // Search query filter
-      const searchMatch = 
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchMatch = searchQuery === "" || [
+        job.title,
+        job.company,
+        job.description
+      ].some(field => field?.toLowerCase()?.includes(searchQuery.toLowerCase()));
 
       // Location filter
-      const locationMatch = !location || job.location.toLowerCase().includes(location.toLowerCase());
+      const locationMatch = !location || 
+        job.location?.toLowerCase()?.includes(location.toLowerCase());
 
       // Category filter
-      const categoryMatch = filters.category === "All" || job.category === filters.category;
+      const categoryMatch = filters.category === "All" || 
+        job.category?.toLowerCase() === filters.category.toLowerCase();
 
       // Job type filter
-      const typeMatch = filters.jobType === "All" || job.type === filters.jobType;
+      const typeMatch = filters.jobType === "All" || 
+        job.type?.toLowerCase() === filters.jobType.toLowerCase();
 
       // Experience level filter
-      const experienceMatch = filters.experienceLevel === "All" || job.experienceLevel === filters.experienceLevel;
+      const experienceMatch = filters.experienceLevel === "All" || 
+        job.experienceLevel?.toLowerCase() === filters.experienceLevel.toLowerCase();
 
       // Salary range filter
-      const salaryMatch = filters.salaryRange === "All" || matchSalaryRange(job.salary, filters.salaryRange);
+      const salaryMatch = filters.salaryRange === "All" || 
+        (job.salary && matchSalaryRange(job.salary, filters.salaryRange));
 
-      return searchMatch && locationMatch && categoryMatch && typeMatch && experienceMatch && salaryMatch;
+      const result = searchMatch && locationMatch && categoryMatch && typeMatch && experienceMatch && salaryMatch;
+      
+      // Debug log for jobs that don't match filters
+      if (!result && job) {
+        console.log('Job filtered out:', {
+          title: job.title,
+          category: job.category,
+          type: job.type,
+          experienceLevel: job.experienceLevel,
+          filters: filters,
+          matches: {
+            category: categoryMatch,
+            type: typeMatch,
+            experience: experienceMatch,
+            salary: salaryMatch
+          }
+        });
+      }
+      
+      return result;
     });
 
+    console.log(`Filtered jobs: ${filteredResults.length} of ${jobs.length}`);
     setFilteredJobs(filteredResults);
   }, [searchQuery, location, filters, jobs]);
 
@@ -213,6 +253,7 @@ const JobListings = () => {
 
 
   const handleFilterChange = (filterType, value) => {
+    console.log(`Changing ${filterType} to:`, value); // Debug log
     setFilters(prev => ({
       ...prev,
       [filterType]: value
