@@ -12,93 +12,134 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh', backgroundColor: '#1e40af', color: 'white', padding: '2rem' }}>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section style={{ 
+        background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #3730a3 100%)',
+        color: 'white',
+        padding: '5rem 0',
+        borderRadius: '8px'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'center' }}>
             {/* Left side - Text content */}
-            <div className="text-left max-w-2xl">
+            <div style={{ textAlign: 'left', maxWidth: '32rem' }}>
               {/* Logo */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="mb-8"
-              >
-                          <Link to="/">
-                <img 
-                  src="/LINXLogo.webp" 
-                  alt="LINX Logo" 
-                  width="64"
-                  height="64"
-                  className="logo-optimized"
-                />
-              </Link>
-              </motion.div>
+              <div style={{ marginBottom: '2rem' }}>
+                <Link to="/">
+                  <img 
+                    src="/LINXLogo.webp" 
+                    alt="LINX Logo" 
+                    width="64"
+                    height="64"
+                    style={{ width: '64px', height: '64px' }}
+                  />
+                </Link>
+              </div>
 
-              <motion.h1
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                Welcome to <span className="text-yellow-400">LINX</span>
-              </motion.h1>
+              <h1 style={{ 
+                fontSize: '3rem', 
+                fontWeight: 'bold', 
+                marginBottom: '1.5rem', 
+                lineHeight: '1.2'
+              }}>
+                Welcome to <span style={{ color: '#fbbf24' }}>LINX</span>
+              </h1>
 
-              <motion.p
-                className="text-xl md:text-2xl mb-8 text-blue-100"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
+              <p style={{ 
+                fontSize: '1.25rem', 
+                marginBottom: '2rem', 
+                color: '#dbeafe',
+                lineHeight: '1.5'
+              }}>
                 Connect. Hire. Grow. The portal that links talent to
                 opportunity.
-              </motion.p>
+              </p>
 
-              <motion.div
-                className="flex flex-col sm:flex-row gap-4"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '1rem',
+                marginBottom: '2rem'
+              }}>
                 <Link
                   to="/register"
-                  className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+                  style={{ 
+                    backgroundColor: 'white',
+                    color: '#2563eb',
+                    padding: '1rem 2rem',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '1.125rem',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background-color 0.2s'
+                  }}
                 >
                   Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight style={{ marginLeft: '0.5rem', width: '20px', height: '20px' }} />
                 </Link>
                 <Link
                   to="/jobs"
-                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center"
+                  style={{ 
+                    border: '2px solid white',
+                    color: 'white',
+                    backgroundColor: 'transparent',
+                    padding: '1rem 2rem',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '1.125rem',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s'
+                  }}
                 >
                   Browse Jobs
                 </Link>
-              </motion.div>
+              </div>
             </div>
 
             {/* Right side - Stats */}
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-3 gap-6"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr 1fr', 
+              gap: '1.5rem'
+            }}>
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
                   <div
                     key={stat.label}
-                    className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center border border-white/20"
+                    style={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(4px)',
+                      borderRadius: '8px',
+                      padding: '1.5rem',
+                      textAlign: 'center',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}
                   >
-                    <Icon className="w-8 h-8 mx-auto mb-3 text-yellow-400" />
-                    <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                    <div className="text-blue-100 text-sm">{stat.label}</div>
+                    <Icon style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      margin: '0 auto 0.75rem', 
+                      color: '#fbbf24',
+                      display: 'block'
+                    }} />
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                      {stat.value}
+                    </div>
+                    <div style={{ color: '#dbeafe', fontSize: '0.875rem' }}>
+                      {stat.label}
+                    </div>
                   </div>
                 );
               })}
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
