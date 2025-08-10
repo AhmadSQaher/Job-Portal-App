@@ -28,15 +28,22 @@ export default function Home() {
               >
                           <Link to="/">
                 <img 
-                  src="/assets/LINXLogo.webp" 
+                  src="/LINXLogo.webp" 
                   alt="LINX Logo" 
                   width="64"
                   height="64"
                   className="logo-optimized"
                   onError={(e) => {
-                    // Fallback to root path if assets path fails
-                    if (e.target.src.includes('/assets/')) {
-                      e.target.src = '/LINXLogo.webp';
+                    // Try assets path, then fallback
+                    const currentSrc = e.target.src;
+                    if (currentSrc.includes('/LINXLogo.webp') && !currentSrc.includes('/assets/')) {
+                      e.target.src = '/assets/LINXLogo.webp';
+                    } else {
+                      // Replace with fallback div
+                      const fallback = document.createElement('div');
+                      fallback.className = 'w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center';
+                      fallback.innerHTML = '<span class="text-white font-bold text-xl">L</span>';
+                      e.target.parentNode.replaceChild(fallback, e.target);
                     }
                   }}
                 />

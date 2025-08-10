@@ -88,13 +88,18 @@ function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="/assets/LINXLogo.webp" 
+              src="/LINXLogo.webp" 
               alt="LINX Logo" 
               className="w-10 h-10 object-contain"
               onError={(e) => {
-                // Fallback to text logo if image fails
-                e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'flex';
+                // Try assets path, then fallback to div
+                const currentSrc = e.target.src;
+                if (currentSrc.includes('/LINXLogo.webp') && !currentSrc.includes('/assets/')) {
+                  e.target.src = '/assets/LINXLogo.webp';
+                } else {
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }
               }}
             />
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center" style={{display: 'none'}}>

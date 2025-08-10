@@ -110,7 +110,7 @@ const HomePage = () => {
               {/* Logo - Optimized for LCP */}
               <div className="mb-8">
                 <img 
-                  src="/assets/LINXLogo.webp" 
+                  src="/LINXLogo.webp" 
                   alt="LINX Logo" 
                   width="64"
                   height="64"
@@ -119,9 +119,17 @@ const HomePage = () => {
                   fetchPriority="high"
                   decoding="sync"
                   onError={(e) => {
-                    // Fallback to root path if assets path fails
-                    if (e.target.src.includes('/assets/')) {
-                      e.target.src = '/LINXLogo.webp';
+                    // Try multiple fallback paths
+                    const currentSrc = e.target.src;
+                    if (currentSrc.includes('/LINXLogo.webp')) {
+                      e.target.src = '/assets/LINXLogo.webp';
+                    } else if (currentSrc.includes('/assets/LINXLogo.webp')) {
+                      // Hide image and show fallback
+                      e.target.style.display = 'none';
+                      const fallback = document.createElement('div');
+                      fallback.className = 'w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center';
+                      fallback.innerHTML = '<span class="text-white font-bold text-xl">L</span>';
+                      e.target.parentNode.appendChild(fallback);
                     }
                   }}
                 />

@@ -89,10 +89,19 @@ app.use((req, res, next) => {
   res.setHeader('Alt-Svc', 'h2=":3000"; ma=86400');
   
   // Cache control optimization for different asset types
-  if (req.url.match(/\.(js|mjs|css)$/)) {
-    // JavaScript and CSS - aggressive caching with versioning
+  if (req.url.match(/\.(js|mjs|jsx)$/)) {
+    // JavaScript and JSX - aggressive caching with versioning
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('ETag', 'strong');
+    // Ensure correct MIME type for JSX files
+    if (req.url.endsWith('.jsx')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    }
+  } else if (req.url.match(/\.css$/)) {
+    // CSS - aggressive caching
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('ETag', 'strong');
+    res.setHeader('Content-Type', 'text/css; charset=UTF-8');
   } else if (req.url.match(/\.(png|jpg|jpeg|gif|ico|svg|webp|avif)$/)) {
     // Images - long cache
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -172,6 +181,13 @@ app.get('*.(js|mjs|css|jsx)', (req, res, next) => {
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
     res.set('Vary', 'Accept-Encoding');
   }
+  next();
+});
+
+// Handle JSX files specifically with correct MIME type
+app.get('*.jsx', (req, res, next) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   next();
 });
 

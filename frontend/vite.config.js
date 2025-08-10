@@ -155,5 +155,8 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     platform: 'browser',
     treeShaking: true
-  }
+  },
+  // Ensure assets are properly copied
+  publicDir: 'public',
+  assetsInclude: ['**/*.webp', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg']
 }));
