@@ -33,16 +33,8 @@ const Signin = () => {
         setError(data.error)
       } else {
         auth.authenticate(data, () => {
-          const role = data.user.role
-          if (role === 'user') {
-            navigate('/user/dashboard')
-          } else if (role === 'employer') {
-            navigate('/employer/dashboard')
-          } else if (role === 'dev' || role === 'admin') {
-            navigate('/dev/dashboard')
-          } else {
-            navigate('/')
-          }
+          // Navigate to the unified dashboard that matches navbar link
+          navigate('/dashboard')
         })
       }
     } catch (err) {

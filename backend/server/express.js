@@ -6,83 +6,121 @@ import helmet from "helmet";
 import compression from "compression";
 import path from "path";
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 import jobRoutes from "../routes/job.routes.js";
 import userRoutes from "../routes/user.routes.js";
 import authRoutes from "../routes/auth.routes.js";
 import employerRoutes from "../routes/employer.routes.js";
 import adminRoutes from "../routes/admin.routes.js";
+import { requireAuth } from '../middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Middleware setup with performance optimizations
+// Enable trust proxy
+app.set('trust proxy', 1);
+
+// Configure CORS
 app.use(cors({
+  origin: ['http://localhost:5173', 'https://localhost:5173'],
   credentials: true,
-  optionsSuccessStatus: 200 // Legacy browsers support
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-forwarded-proto', 'Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range', 'Content-Type', 'Accept'],
+  optionsSuccessStatus: 200
 }));
 
+// Additional CORS headers for preflight requests
+app.options('*', cors());
+
+// Force HTTPS when needed
+app.use((req, res, next) => {
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    next();
+  } else if (process.env.NODE_ENV === 'production') {
+    res.redirect('https://' + req.headers.host + req.url);
+  } else {
+    next();
+  }
+});
+
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "http://localhost:5173"],
-      styleSrc: ["'self'", "'unsafe-inline'", "http://localhost:5173"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "http://localhost:5173"],
-      imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5173", "ws://localhost:5173"],
-      fontSrc: ["'self'", "data:", "http://localhost:5173"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "http://localhost:5173"],
-      frameSrc: ["'self'"],
-      workerSrc: ["'self'", "blob:"],
-    },
-  },
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 })); 
 
 app.use(compression({
-  level: 9, // Maximum compression level for production
-  threshold: 512, // Compress files larger than 512 bytes
+  level: 9, // Maximum compression level
+  threshold: 256, // Compress smaller files too
+  memLevel: 9, // Maximum memory for better compression
+  strategy: 0, // Default strategy for mixed content
+  chunkSize: 16384, // Smaller chunks for HTTP/2
+  windowBits: 15, // Maximum window size
   filter: (req, res) => {
-    // Don't compress if client doesn't support it
+    // Skip compression for certain conditions
     if (req.headers['x-no-compression']) {
       return false;
     }
-    // Skip compression for already compressed files
-    const contentType = res.getHeader('content-type');
+    
+    // Skip already compressed content
+    const contentType = res.getHeader('content-type') || '';
     if (contentType && (
       contentType.includes('image/') ||
       contentType.includes('video/') ||
       contentType.includes('audio/') ||
-      contentType.includes('application/pdf')
+      contentType.includes('application/pdf') ||
+      contentType.includes('application/zip') ||
+      contentType.includes('application/gzip')
     )) {
       return false;
     }
-    // Compress all text-based content
+    
+    // Always compress text-based content for HTTP/2
     return compression.filter(req, res);
   }
-})); // ⚡ Enhanced Gzip compression
+})); // ⚡ Enhanced compression for HTTP/2
 
-// Security and performance headers
+// HTTP/2 and performance optimization headers
 app.use((req, res, next) => {
-  // Enable HTTP/2 Server Push hints
-  res.setHeader('Link', '</assets/main.js>; rel=preload; as=script');
+  // Force HTTP/2 advertising
+  res.setHeader('Alt-Svc', 'h2=":3000"; ma=86400');
   
-  // Cache control for static assets
-  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
+  // Cache control optimization for different asset types
+  if (req.url.match(/\.(js|mjs|css)$/)) {
+    // JavaScript and CSS - aggressive caching with versioning
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('ETag', 'strong');
+  } else if (req.url.match(/\.(png|jpg|jpeg|gif|ico|svg|webp|avif)$/)) {
+    // Images - long cache
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (req.url.match(/\.(woff|woff2|ttf|eot|otf)$/)) {
+    // Fonts - very long cache
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (req.url.includes('/api/')) {
+    // API responses - no cache
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else if (req.url.endsWith('.html')) {
+    // HTML - short cache for updates
+    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
   } else {
+    // Default - moderate caching
     res.setHeader('Cache-Control', 'public, max-age=3600');
   }
   
-  // Performance headers
+  // HTTP/2 and performance headers
   res.setHeader('X-DNS-Prefetch-Control', 'on');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Vary header for proper caching
+  res.setHeader('Vary', 'Accept-Encoding, Accept');
   
   next();
 });
@@ -91,49 +129,46 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Setup resume uploads directory
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Export uploadDir for use in controllers
+export const getUploadDir = () => uploadDir;
+
 // Routes
+// Public job routes (for viewing jobs without auth)
 app.use("/api/jobs", jobRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/users", requireAuth, userRoutes);
 app.use("/auth", authRoutes);
-app.use("/api/employers", employerRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/api/employers", requireAuth, employerRoutes);
+app.use("/api/admin", requireAuth, adminRoutes);
 
-// Enhanced pre-compressed static file serving
-app.get('*.js', (req, res, next) => {
+// Enhanced pre-compressed static file serving with HTTP/2 optimization
+app.get('*.(js|mjs|css)', (req, res, next) => {
   const acceptEncoding = req.headers['accept-encoding'] || '';
+  const originalUrl = req.url;
   
+  // Prefer Brotli compression for better efficiency
   if (acceptEncoding.includes('br')) {
-    req.url = req.url + '.br';
+    req.url = originalUrl + '.br';
     res.set('Content-Encoding', 'br');
-    res.set('Content-Type', 'application/javascript; charset=UTF-8');
+    res.set('Content-Type', originalUrl.endsWith('.css') ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.set('Vary', 'Accept-Encoding');
   } else if (acceptEncoding.includes('gzip')) {
-    req.url = req.url + '.gz';
+    req.url = originalUrl + '.gz';
     res.set('Content-Encoding', 'gzip');
-    res.set('Content-Type', 'application/javascript; charset=UTF-8');
+    res.set('Content-Type', originalUrl.endsWith('.css') ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.set('Vary', 'Accept-Encoding');
   }
   next();
 });
 
-app.get('*.css', (req, res, next) => {
-  const acceptEncoding = req.headers['accept-encoding'] || '';
-  
-  if (acceptEncoding.includes('br')) {
-    req.url = req.url + '.br';
-    res.set('Content-Encoding', 'br');
-    res.set('Content-Type', 'text/css; charset=UTF-8');
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-  } else if (acceptEncoding.includes('gzip')) {
-    req.url = req.url + '.gz';
-    res.set('Content-Encoding', 'gzip');
-    res.set('Content-Type', 'text/css; charset=UTF-8');
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-  next();
-});
-
-// Serve static files with enhanced caching
+// Serve static files with enhanced caching and HTTP/2 optimization
 app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
   maxAge: '1y',
   etag: true,

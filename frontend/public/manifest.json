@@ -3,19 +3,23 @@
   "name": "LINX Job Portal - Find Jobs & Hire Talent",
   "icons": [
     {
-      "src": "LINXLogo.webp",
-      "type": "image/webp",
-      "sizes": "192x192"
-    },
-    {
-      "src": "LINXLogo.webp", 
-      "type": "image/webp",
-      "sizes": "512x512"
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
     }
   ],
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#2563eb",
   "background_color": "#f8fafc",
-  "description": "Find your next career opportunity or hire top talent with LINX Job Portal"
+  "description": "Find your next career opportunity or hire top talent with LINX Job Portal",
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "edge_side_panel": {},
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }

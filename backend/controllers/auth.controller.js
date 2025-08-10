@@ -4,6 +4,54 @@ import config from '../config/config.js'
 import { expressjwt } from 'express-jwt'
 
 // POST /auth/signin
+// POST /auth/signup
+export const signup = async (req, res) => {
+  try {
+    const { username, email, password, name, role } = req.body;
+    console.log('📝 Registration attempt:', { username, email, name, role });
+
+    // Check if username or email already exists
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }]
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: existingUser.username === username 
+          ? 'Username is already taken' 
+          : 'Email is already registered'
+      });
+    }
+
+    // Create new user
+    const user = new User({
+      username,
+      email,
+      password,
+      name,
+      role: role || 'user' // Default to 'user' if role is not specified
+    });
+
+    await user.save();
+    console.log('✅ User registered:', username);
+
+    return res.status(201).json({
+      message: 'Successfully signed up!',
+      user: {
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error('Registration error:', err);
+    return res.status(400).json({
+      error: err.message || 'Could not create user'
+    });
+  }
+};
+
 export const signin = async (req, res) => {
   try {
     const { username, password } = req.body
@@ -32,15 +80,28 @@ export const signin = async (req, res) => {
 
     res.cookie('t', token, { expire: new Date() + 9999 })
 
+    // Include resume information in the response
+    const responseUser = {
+      _id: user._id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
+
+    // Add resume info if it exists
+    if (user.resume && user.resume.originalName) {
+      responseUser.resume = {
+        filename: user.resume.filename,
+        originalName: user.resume.originalName,
+        uploadDate: user.resume.uploadDate
+      };
+      console.log('📄 Including resume info in signin response:', user.resume.originalName);
+    }
+
     return res.json({
       token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: responseUser
     })
   } catch (err) {
     console.error('Signin error:', err)

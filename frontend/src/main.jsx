@@ -1,35 +1,29 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import { 
-  initPerformanceMonitoring, 
-  observeResourceTiming, 
-  preloadCriticalResources,
-  setupLazyLoading,
-  markPerformance 
-} from "./utils/performanceMonitor.js";
-import { registerServiceWorker } from "./utils/serviceWorker.js";
 
-// Mark app start
-markPerformance('app-start');
+// Lazy load service worker to not block main thread
+const loadServiceWorker = async () => {
+  if (import.meta.env.PROD) {
+    const { registerServiceWorker } = await import("./utils/serviceWorker.js");
+    registerServiceWorker();
+  }
+};
 
-// Initialize performance monitoring
-if (process.env.NODE_ENV === 'production') {
-  initPerformanceMonitoring();
-  observeResourceTiming();
-  registerServiceWorker();
-  // Only preload in production
-  preloadCriticalResources();
+// Critical rendering path optimization
+const root = createRoot(document.getElementById("root"));
+
+// Remove React.StrictMode in production for better performance
+if (import.meta.env.DEV) {
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+} else {
+  root.render(<App />);
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
-
-// Mark app render complete
-markPerformance('app-rendered');
-
-// Setup lazy loading after initial render
-setTimeout(() => {
-  setupLazyLoading();
-}, 100);
+// Load service worker after initial render to avoid blocking
+setTimeout(loadServiceWorker, 1000);

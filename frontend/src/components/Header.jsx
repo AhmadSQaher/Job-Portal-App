@@ -1,12 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Search,
   Menu,
   X,
   User,
-  Bell,
   Building2,
   LayoutDashboard,
   LogOut,
@@ -14,12 +12,14 @@ import {
 } from "lucide-react";
 // import Logo from "./Logo";
 import { useAuth } from "../context/AuthContext";
+import { useJobContext } from "../context/JobContext";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { favoriteCount, applicationCount } = useJobContext();
 
   const navigation = useMemo(() => {
     const getDashboardLink = () => {
@@ -35,15 +35,47 @@ function Header() {
       console.log("🔗 Dashboard link for user:", user?.role, "->", dashboardLink);
     }
 
+    const baseNavigation = [
+      { name: "Companies", href: "/companies", icon: Building2 },
+    ];
+
+    // Add role-specific navigation items
+    if (user) {
+      if (user.role === 'employer') {
+        return [
+          { name: "Free Agents", href: "/free-agents", icon: Search },
+          ...baseNavigation,
+          { 
+            name: "Dashboard", 
+            href: dashboardLink, 
+            icon: LayoutDashboard,
+            badge: applicationCount ? applicationCount : undefined 
+          }
+        ];
+      } else {
+        return [
+          { name: "Find Jobs", href: "/jobs", icon: Search },
+          ...baseNavigation,
+          { 
+            name: "Dashboard", 
+            href: dashboardLink, 
+            icon: LayoutDashboard,
+            badge: applicationCount ? applicationCount : undefined 
+          },
+          { 
+            name: "Favorites", 
+            href: "/favorites", 
+            icon: Star,
+            badge: favoriteCount ? favoriteCount : undefined 
+          }
+        ];
+      }
+    }
+    
+    // Navigation for non-logged-in users
     return [
       { name: "Find Jobs", href: "/jobs", icon: Search },
-      { name: "Companies", href: "/companies", icon: Building2 },
-      ...(user
-        ? [
-            { name: "Dashboard", href: dashboardLink, icon: LayoutDashboard },
-            { name: "Favorites", href: "/favorites", icon: Star }
-          ]
-        : []),
+      ...baseNavigation
     ];
   }, [user]);
 
@@ -86,9 +118,6 @@ function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
-                  <Bell className="w-5 h-5" />
-                </button>
                 {user.role === "employer" && (
                   <Link
                     to="/post-job"
@@ -97,12 +126,6 @@ function Header() {
                     Post a Job
                   </Link>
                 )}
-                <Link
-                  to="/post-job-test"
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                >
-                  Test Post Job
-                </Link>
                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                   {user.role}
                 </span>

@@ -47,7 +47,8 @@ const Register = () => {
         role: formData.role,
       });
 
-      const response = await fetch("http://localhost:3000/api/users/create", {
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+      const response = await fetch(`${API_BASE}/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +258,6 @@ const Register = () => {
               >
                 <option value="user">Job Seeker</option>
                 <option value="employer">Employer</option>
-                <option value="dev">Developer</option>
               </select>
             </div>
 

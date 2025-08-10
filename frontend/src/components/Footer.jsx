@@ -11,12 +11,12 @@ import {
   ArrowUp,
 } from "lucide-react";
 
-function Footer() {
-  const scrollToTop = React.useCallback(() => {
+const Footer = () => {
+  const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  };
 
-  const footerLinks = React.useMemo(() => ({
+  const footerLinks = {
     company: [
       { name: "About Us", href: "/about" },
       { name: "Careers", href: "/careers" },
@@ -41,14 +41,14 @@ function Footer() {
       { name: "Job Alerts", href: "/alerts" },
       { name: "Career Advice", href: "/advice" },
     ],
-  }), []);
+  };
 
-  const socialLinks = React.useMemo(() => [
+  const socialLinks = [
     { name: "Facebook", icon: Facebook, href: "#" },
     { name: "Twitter", icon: Twitter, href: "#" },
     { name: "LinkedIn", icon: Linkedin, href: "#" },
     { name: "Instagram", icon: Instagram, href: "#" },
-  ], []);
+  ];
 
   return (
     <footer className="bg-gray-900 text-white">

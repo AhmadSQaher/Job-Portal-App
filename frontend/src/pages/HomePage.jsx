@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Search,
   MapPin,
@@ -18,12 +17,34 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// Lazy load Spline component to prevent LCP blocking
-const SplineEmbed = React.lazy(() => import("../components/SplineEmbed"));
+// Ultra-lazy load heavy components to improve LCP
+const SplineEmbed = lazy(() => 
+  import("../components/SplineEmbed").then(module => ({
+    default: module.default
+  }))
+);
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
+  const [animationReady, setAnimationReady] = useState(false);
+
+  // Delay heavy 3D animations to improve LCP
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimationReady(true);
+    }, 3000); // Load 3D after 3 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleSearch = () => {
+    // Simple search handler - could be enhanced to navigate to jobs page with search params
+    if (searchQuery.trim() || location.trim()) {
+      console.log('Searching for:', { query: searchQuery, location });
+      // In a real app, this would navigate to /jobs?search=query&location=location
+    }
+  };
 
   const jobCategories = [
     { icon: Code, name: "Technology", count: "2,847", color: "bg-blue-500" },
@@ -86,27 +107,29 @@ const HomePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left side - Text content */}
             <div className="text-left max-w-2xl">
-              {/* Logo - Static for immediate render */}
+              {/* Logo - Optimized for LCP */}
               <div className="mb-8">
                 <img 
                   src="/LINXLogo.webp" 
                   alt="LINX Logo" 
                   width="64"
                   height="64"
-                  className="logo-optimized"
+                  className="logo-optimized w-16 h-16 object-contain"
                   loading="eager"
-                  fetchpriority="high"
+                  fetchPriority="high"
+                  decoding="sync"
                 />
               </div>
 
-              {/* Critical LCP Element - Static for immediate visibility */}
+              {/* CRITICAL LCP ELEMENT - Static render with inline styles for immediate visibility */}
               <h1
                 className="lcp-critical text-4xl md:text-6xl font-bold mb-6 leading-tight"
                 style={{ 
                   opacity: 1,
-                  transform: 'none',
+                  transform: 'translateZ(0)',
                   willChange: 'auto',
-                  animation: 'none'
+                  animation: 'none',
+                  fontDisplay: 'swap'
                 }}
               >
                 Find Your Dream Job
@@ -123,13 +146,8 @@ const HomePage = () => {
                 you need. Its your future.
               </p>
 
-              {/* Search Bar - Delayed animation after LCP */}
-              <motion.div
-                className="bg-white rounded-xl p-2 shadow-lg mb-8"
-                initial={{ opacity: 0.8, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.8 }}
-              >
+              {/* Search Bar - Use conditional rendering to avoid motion library initially */}
+              <div className="bg-white rounded-xl p-2 shadow-lg mb-8">
                 <div className="flex flex-col md:flex-row gap-2">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -151,19 +169,17 @@ const HomePage = () => {
                       className="w-full pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none"
                     />
                   </div>
-                  <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                  <button 
+                    onClick={handleSearch}
+                    className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
                     Search Jobs
                   </button>
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Popular Searches - Delayed to not block LCP */}
-              <motion.div
-                className="flex flex-wrap gap-2"
-                initial={{ opacity: 0.8, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 1.2 }}
-              >
+              {/* Popular Searches - Static to avoid animation blocking */}
+              <div className="flex flex-wrap gap-2">
                 <span className="text-blue-200 text-sm">Popular:</span>
                 {[
                   "Software Engineer",
@@ -173,48 +189,56 @@ const HomePage = () => {
                 ].map((term) => (
                   <button
                     key={term}
+                    onClick={() => setSearchQuery(term)}
                     className="text-blue-100 hover:text-white text-sm bg-blue-500/20 hover:bg-blue-500/30 px-3 py-1 rounded-full transition-colors"
                   >
                     {term}
                   </button>
                 ))}
-              </motion.div>
+              </div>
             </div>
 
-            {/* Right side - 3D Robot - Heavily delayed to not impact LCP */}
-            <motion.div
-              className="h-96 lg:h-[500px] relative"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 2.0 }}
-            >
-              <React.Suspense 
-                fallback={
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-6xl animate-pulse">🤖</div>
+            {/* Right side - 3D Robot - Ultra-delayed for LCP optimization */}
+            <div className="h-96 lg:h-[500px] relative">
+              {!animationReady ? (
+                <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white rounded-lg">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">🤖</div>
+                    <div className="text-lg">Interactive 3D Loading...</div>
                   </div>
-                }
-              >
-                <SplineEmbed />
-              </React.Suspense>
-            </motion.div>
+                </div>
+              ) : (
+                <Suspense 
+                  fallback={
+                    <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white rounded-lg">
+                      <div className="text-center">
+                        <div className="text-6xl mb-4">🤖</div>
+                        <div className="text-lg">Loading 3D Experience...</div>
+                      </div>
+                    </div>
+                  }
+                >
+                  <SplineEmbed 
+                    scene="https://prod.spline.design/VdhvnwERo8cr6HiK/scene.splinecode"
+                    className="w-full h-full"
+                  />
+                </Suspense>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats Section - Static to avoid animation blocking */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <motion.div
+                <div
                   key={stat.label}
                   className="text-center"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 * index }}
                 >
                   <div className="bg-white rounded-xl p-6 shadow-sm">
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -225,7 +249,7 @@ const HomePage = () => {
                     </h3>
                     <p className="text-gray-600">{stat.label}</p>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
@@ -235,30 +259,22 @@ const HomePage = () => {
       {/* Job Categories */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Explore Job Categories
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Find the perfect job in your field of expertise
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobCategories.map((category, index) => {
               const Icon = category.icon;
               return (
-                <motion.div
+                <div
                   key={category.name}
                   className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
                 >
                   <div
                     className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mb-4`}
@@ -278,38 +294,30 @@ const HomePage = () => {
                     Browse Jobs
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Link>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Featured Jobs */}
+      {/* Featured Jobs - Static to avoid blocking */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Featured Jobs
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Hand-picked opportunities from top companies
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredJobs.map((job, index) => (
-              <motion.div
+              <div
                 key={job.id}
                 className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 * index }}
               >
                 {job.featured && (
                   <div className="flex items-center mb-4">
@@ -338,16 +346,11 @@ const HomePage = () => {
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
-          <motion.div
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
+          <div className="text-center mt-12">
             <Link
               to="/jobs"
               className="inline-flex items-center bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
@@ -355,7 +358,7 @@ const HomePage = () => {
               View All Jobs
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

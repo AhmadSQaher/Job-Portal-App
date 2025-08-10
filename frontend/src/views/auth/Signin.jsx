@@ -34,17 +34,8 @@ export default function Signin() {
       if (result.error) {
         setError(result.error);
       } else {
-        // Redirect based on user role
-        const role = result.user.role;
-        if (role === "user") {
-          navigate("/dashboard");
-        } else if (role === "employer") {
-          navigate("/employer/dashboard");
-        } else if (role === "dev" || role === "admin") {
-          navigate("/dev/dashboard");
-        } else {
-          navigate("/");
-        }
+        // Navigate to the unified dashboard that matches navbar link
+        navigate("/dashboard");
       }
     } catch (err) {
       setError("Login failed. Please try again.");

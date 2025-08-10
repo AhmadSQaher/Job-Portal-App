@@ -35,27 +35,9 @@ const Login = () => {
       if (result.error) {
         setError(result.error);
       } else {
-        // Redirect based on user role
-        const role = result.user.role;
-        console.log(
-          "🎯 User role:",
-          role,
-          "Redirecting to appropriate dashboard..."
-        );
-
-        if (role === "user") {
-          console.log("➡️ Redirecting to /dashboard");
-          navigate("/dashboard");
-        } else if (role === "employer") {
-          console.log("➡️ Redirecting to /employer/dashboard");
-          navigate("/employer/dashboard");
-        } else if (role === "dev" || role === "admin") {
-          console.log("➡️ Redirecting to /dev/dashboard");
-          navigate("/dev/dashboard");
-        } else {
-          console.log("➡️ Redirecting to / (unknown role)");
-          navigate("/");
-        }
+        // Navigate to the unified dashboard that matches navbar link
+        console.log("➡️ Redirecting to /dashboard");
+        navigate("/dashboard");
       }
     } catch (err) {
       console.error("❌ Login error:", err);

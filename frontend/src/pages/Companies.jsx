@@ -1,64 +1,49 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Building2, Users, MapPin, Star, Loader } from "lucide-react";
+import { Building2, Users, MapPin, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useJobContext } from "../context/JobContext";
+import { useAuth } from "../context/AuthContext";
 
-const Companies = () => {
+export default function Companies() {
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { jobs, loading } = useJobContext();
+  const { user } = useAuth();
+  
+  if (loading || !jobs || !Array.isArray(jobs)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading companies...</span>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/jobs");
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const jobs = await response.json();
-        
-        // Create a map to store company information and job counts
-        const companyMap = new Map();
-        
-        jobs.forEach(job => {
-          if (!job.company) return;
-          
-          if (!companyMap.has(job.company)) {
-            companyMap.set(job.company, {
-              name: job.company,
-              logo: "🏢", // Default logo
-              industry: job.category || "Various",
-              location: job.location || "Multiple Locations",
-              openPositions: 1
-            });
-          } else {
-            const company = companyMap.get(job.company);
-            company.openPositions++;
-            // Update location if not already set
-            if (!company.location && job.location) {
-              company.location = job.location;
-            }
-            // Update industry if not already set
-            if (!company.industry && job.category) {
-              company.industry = job.category;
-            }
-          }
+  const companies = useMemo(() => {
+    if (!Array.isArray(jobs)) return [];
+    
+    const uniqueCompanies = new Map();
+    jobs.forEach(job => {
+      const companyName = job.company || 'Unknown Company';
+      if (!uniqueCompanies.has(companyName)) {
+        uniqueCompanies.set(companyName, {
+          id: job.id || job._id,
+          name: companyName,
+          logo: job.logo || "🏢",
+          industry: job.category || 'Uncategorized',
+          location: job.location || 'Location not specified',
+          employees: "50+", // Default value since we don't have this data
+          rating: (Math.random() * (5 - 3.5) + 3.5).toFixed(1), // Random rating between 3.5-5
+          openPositions: 1
         });
-        
-        // Convert map to array and sort by number of open positions
-        const companyArray = Array.from(companyMap.values())
-          .sort((a, b) => b.openPositions - a.openPositions);
-        
-        setCompanies(companyArray);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-        setError("Failed to fetch companies. Please try again later.");
-        setIsLoading(false);
+      } else {
+        const company = uniqueCompanies.get(companyName);
+        company.openPositions++;
       }
-    };
+    });
 
-    fetchJobs();
-  }, []);
+    return Array.from(uniqueCompanies.values());
+  }, [jobs]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -72,65 +57,76 @@ const Companies = () => {
         >
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Companies</h1>
           <p className="text-gray-600">
-            Explore companies and their job opportunities
+            Discover amazing companies and their opportunities.
           </p>
         </motion.div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[400px]">
-            <Loader className="w-8 h-8 animate-spin text-blue-600" />
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-600 py-8">{error}</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {companies.map((company, index) => (
-              <motion.div
-                key={company.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="text-3xl">{company.logo}</div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {company.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm">{company.industry}</p>
-                  </div>
-                </div>
+        {/* Results Count */}
+        <div className="mb-6">
+          <p className="text-gray-600">
+            Showing {companies.length} companies with active job listings
+          </p>
+        </div>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center space-x-2 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{company.location}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-600">
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-sm">{company.industry}</span>
-                  </div>
+        {/* Companies Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {companies.length === 0 ? (
+            <div className="col-span-full text-center py-8">
+              <p className="text-gray-600">No companies found with active job listings.</p>
+            </div>
+          ) : (
+            companies.map((company, index) => (
+            <motion.div
+              key={company.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="text-3xl">{company.logo}</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {company.name}
+                  </h3>
+                  <p className="text-gray-600 text-sm">{company.industry}</p>
                 </div>
+              </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-blue-600 font-medium">
-                    {company.openPositions} open positions
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm">{company.location}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm">{company.employees} employees</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                  <span className="text-sm text-gray-600">
+                    {company.rating}
                   </span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-blue-600 font-medium">
+                  {company.openPositions} open positions
+                </span>
+                {(!user || user.role !== 'employer') && (
                   <button 
-                    onClick={() => navigate(`/jobs?company=${encodeURIComponent(company.name)}`)}
+                    onClick={() => navigate('/jobs', { state: { companySearch: company.name } })}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
                     View Jobs
                   </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+                )}
+              </div>
+            </motion.div>
+          )))}
+        </div>
       </div>
     </div>
   );
-};
-
-export default Companies;
+}

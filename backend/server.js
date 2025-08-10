@@ -20,15 +20,19 @@ mongoose.connection.on('error', () => {
   console.error('MongoDB connection error')
 })
 
-// Optional welcome route (you could remove this if duplicated in express.js)
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the LINX Job Portal API' })
-})
-
 // Launch the server
-app.listen(config.port, (err) => {
-  if (err) {
-    console.error(err)
-  }
-  console.info(`Server running at http://localhost:${config.port}`)
-})
+try {
+  app.listen(config.port, '0.0.0.0', (err) => {
+    if (err) {
+      console.error('Server error:', err)
+      process.exit(1)
+    }
+    console.info(`Server running at http://localhost:${config.port}`)
+  }).on('error', (err) => {
+    console.error('Server failed to start:', err)
+    process.exit(1)
+  })
+} catch (error) {
+  console.error('Failed to create server:', error)
+  process.exit(1)
+}

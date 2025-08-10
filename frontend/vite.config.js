@@ -7,7 +7,11 @@ import legacy from '@vitejs/plugin-legacy'
 import { analyzer } from 'vite-bundle-analyzer'
 import { devCompression } from './vite-compression-plugin.js'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // CSS optimization to reduce preload warnings
+  css: {
+    devSourcemap: mode === 'development'
+  },
   plugins: [
     react({
       // Enable React Fast Refresh optimizations
@@ -125,6 +129,14 @@ export default defineConfig({
     sourcemap: false, // Disable in production for performance
     // Target modern browsers for better optimization
     target: 'esnext',
+    // Optimize module preload to reduce CSS preload warnings
+    modulePreload: {
+      polyfill: false,
+      resolveDependencies: (url, deps, context) => {
+        // Filter out CSS files from preloading to reduce warnings
+        return deps.filter(dep => !dep.includes('.css'));
+      }
+    }
   },
   // Performance optimizations
   optimizeDeps: {
@@ -144,4 +156,4 @@ export default defineConfig({
     platform: 'browser',
     treeShaking: true
   }
-})
+}));
