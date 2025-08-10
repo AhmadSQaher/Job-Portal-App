@@ -1,5 +1,6 @@
 import React, { useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
+import LogoImage from "../components/LogoImage";
 import {
   Search,
   MapPin,
@@ -109,29 +110,12 @@ const HomePage = () => {
             <div className="text-left max-w-2xl">
               {/* Logo - Optimized for LCP */}
               <div className="mb-8">
-                <img 
-                  src="/LINXLogo.webp" 
-                  alt="LINX Logo" 
+                <LogoImage 
+                  className="logo-optimized w-16 h-16 object-contain"
                   width="64"
                   height="64"
-                  className="logo-optimized w-16 h-16 object-contain"
+                  priority="high"
                   loading="eager"
-                  fetchPriority="high"
-                  decoding="sync"
-                  onError={(e) => {
-                    // Try multiple fallback paths
-                    const currentSrc = e.target.src;
-                    if (currentSrc.includes('/LINXLogo.webp')) {
-                      e.target.src = '/assets/LINXLogo.webp';
-                    } else if (currentSrc.includes('/assets/LINXLogo.webp')) {
-                      // Hide image and show fallback
-                      e.target.style.display = 'none';
-                      const fallback = document.createElement('div');
-                      fallback.className = 'w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center';
-                      fallback.innerHTML = '<span class="text-white font-bold text-xl">L</span>';
-                      e.target.parentNode.appendChild(fallback);
-                    }
-                  }}
                 />
               </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import LogoImage from "./LogoImage";
 import {
   Search,
   Menu,
@@ -87,24 +88,11 @@ function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img 
-              src="/LINXLogo.webp" 
-              alt="LINX Logo" 
+            <LogoImage 
               className="w-10 h-10 object-contain"
-              onError={(e) => {
-                // Try assets path, then fallback to div
-                const currentSrc = e.target.src;
-                if (currentSrc.includes('/LINXLogo.webp') && !currentSrc.includes('/assets/')) {
-                  e.target.src = '/assets/LINXLogo.webp';
-                } else {
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }
-              }}
+              width="40"
+              height="40"
             />
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center" style={{display: 'none'}}>
-              <span className="text-white font-bold text-xl">L</span>
-            </div>
             <span className="ml-2 text-xl font-bold text-gray-900">LINX</span>
           </Link>
 

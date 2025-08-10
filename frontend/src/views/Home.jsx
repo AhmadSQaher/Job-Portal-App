@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Users, Building2, TrendingUp } from "lucide-react";
+import LogoImage from "../components/LogoImage";
 
 export default function Home() {
   const stats = [
@@ -27,25 +28,10 @@ export default function Home() {
                 className="mb-8"
               >
                           <Link to="/">
-                <img 
-                  src="/LINXLogo.webp" 
-                  alt="LINX Logo" 
+                <LogoImage 
+                  className="logo-optimized"
                   width="64"
                   height="64"
-                  className="logo-optimized"
-                  onError={(e) => {
-                    // Try assets path, then fallback
-                    const currentSrc = e.target.src;
-                    if (currentSrc.includes('/LINXLogo.webp') && !currentSrc.includes('/assets/')) {
-                      e.target.src = '/assets/LINXLogo.webp';
-                    } else {
-                      // Replace with fallback div
-                      const fallback = document.createElement('div');
-                      fallback.className = 'w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center';
-                      fallback.innerHTML = '<span class="text-white font-bold text-xl">L</span>';
-                      e.target.parentNode.replaceChild(fallback, e.target);
-                    }
-                  }}
                 />
               </Link>
               </motion.div>

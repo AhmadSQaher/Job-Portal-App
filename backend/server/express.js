@@ -217,11 +217,46 @@ app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
   }
 }));
 
+// Additional static serving for assets folder specifically 
+app.use('/assets', express.static(path.join(__dirname, '../../frontend/dist/assets'), {
+  maxAge: '1y',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    } else if (filePath.endsWith('.js') || filePath.endsWith('.mjs') || filePath.endsWith('.jsx')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    } else if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+    }
+  }
+}));
+
 // Handle specific asset routes to prevent fallback conflicts
 app.get('/assets/*', (req, res, next) => {
   // This should be handled by static middleware above
   // If we reach here, the file doesn't exist
   res.status(404).json({ error: 'Asset not found' });
+});
+
+// Specific route for logo with multiple fallbacks
+app.get('/LINXLogo.webp', (req, res) => {
+  const logoPath = path.join(__dirname, '../../frontend/dist/LINXLogo.webp');
+  const assetsLogoPath = path.join(__dirname, '../../frontend/dist/assets/LINXLogo.webp');
+  
+  // Try root path first
+  if (require('fs').existsSync(logoPath)) {
+    res.setHeader('Content-Type', 'image/webp');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.sendFile(logoPath);
+  } else if (require('fs').existsSync(assetsLogoPath)) {
+    res.setHeader('Content-Type', 'image/webp');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.sendFile(assetsLogoPath);
+  } else {
+    res.status(404).send('Logo not found');
+  }
 });
 
 // Handle React Router routes - serve index.html for all non-API routes
