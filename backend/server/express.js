@@ -147,21 +147,28 @@ app.use("/api/employers", requireAuth, employerRoutes);
 app.use("/api/admin", requireAuth, adminRoutes);
 
 // Enhanced pre-compressed static file serving with HTTP/2 optimization
-app.get('*.(js|mjs|css)', (req, res, next) => {
+app.get('*.(js|mjs|css|jsx)', (req, res, next) => {
   const acceptEncoding = req.headers['accept-encoding'] || '';
   const originalUrl = req.url;
+  
+  // Set proper MIME types first
+  if (originalUrl.endsWith('.js') || originalUrl.endsWith('.mjs')) {
+    res.set('Content-Type', 'application/javascript; charset=UTF-8');
+  } else if (originalUrl.endsWith('.jsx')) {
+    res.set('Content-Type', 'application/javascript; charset=UTF-8');
+  } else if (originalUrl.endsWith('.css')) {
+    res.set('Content-Type', 'text/css; charset=UTF-8');
+  }
   
   // Prefer Brotli compression for better efficiency
   if (acceptEncoding.includes('br')) {
     req.url = originalUrl + '.br';
     res.set('Content-Encoding', 'br');
-    res.set('Content-Type', originalUrl.endsWith('.css') ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
     res.set('Vary', 'Accept-Encoding');
   } else if (acceptEncoding.includes('gzip')) {
     req.url = originalUrl + '.gz';
     res.set('Content-Encoding', 'gzip');
-    res.set('Content-Type', originalUrl.endsWith('.css') ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
     res.set('Vary', 'Accept-Encoding');
   }
@@ -173,12 +180,33 @@ app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
   maxAge: '1y',
   etag: true,
   lastModified: true,
-  setHeaders: (res, path) => {
-    if (path.endsWith('.html')) {
+  setHeaders: (res, filePath) => {
+    // Set proper MIME types for different file types
+    if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    } else if (filePath.endsWith('.jsx')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    } else if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+    } else if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'public, max-age=0');
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    } else if (filePath.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    } else if (filePath.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
     }
   }
 }));
+
+// Handle specific asset routes to prevent fallback conflicts
+app.get('/assets/*', (req, res, next) => {
+  // This should be handled by static middleware above
+  // If we reach here, the file doesn't exist
+  res.status(404).json({ error: 'Asset not found' });
+});
 
 // Handle React Router routes - serve index.html for all non-API routes
 app.get('*', (req, res, next) => {
