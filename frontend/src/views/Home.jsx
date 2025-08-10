@@ -28,11 +28,17 @@ export default function Home() {
               >
                           <Link to="/">
                 <img 
-                  src="/LINXLogo.webp" 
+                  src="/assets/LINXLogo.webp" 
                   alt="LINX Logo" 
                   width="64"
                   height="64"
                   className="logo-optimized"
+                  onError={(e) => {
+                    // Fallback to root path if assets path fails
+                    if (e.target.src.includes('/assets/')) {
+                      e.target.src = '/LINXLogo.webp';
+                    }
+                  }}
                 />
               </Link>
               </motion.div>

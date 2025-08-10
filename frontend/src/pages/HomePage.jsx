@@ -110,7 +110,7 @@ const HomePage = () => {
               {/* Logo - Optimized for LCP */}
               <div className="mb-8">
                 <img 
-                  src="/LINXLogo.webp" 
+                  src="/assets/LINXLogo.webp" 
                   alt="LINX Logo" 
                   width="64"
                   height="64"
@@ -118,6 +118,12 @@ const HomePage = () => {
                   loading="eager"
                   fetchPriority="high"
                   decoding="sync"
+                  onError={(e) => {
+                    // Fallback to root path if assets path fails
+                    if (e.target.src.includes('/assets/')) {
+                      e.target.src = '/LINXLogo.webp';
+                    }
+                  }}
                 />
               </div>
 

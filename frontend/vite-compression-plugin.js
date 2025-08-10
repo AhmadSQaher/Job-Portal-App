@@ -68,7 +68,7 @@ export function devCompression() {
         // Critical resource prioritization for LCP optimization
         if (req.url && (
           req.url.includes('/src/pages/HomePage.jsx') ||
-          req.url.includes('/LINXLogo.webp') ||
+          req.url.includes('/assets/LINXLogo.webp') ||
           req.url.includes('/src/main.jsx') ||
           req.url.includes('/src/App.jsx')
         )) {
@@ -132,7 +132,7 @@ export function devCompression() {
             '</src/main.jsx>; rel=modulepreload; as=script',
             '</src/App.jsx>; rel=modulepreload; as=script',
             '</src/index.css>; rel=preload; as=style',
-            '</LINXLogo.webp>; rel=preload; as=image'
+            '</assets/LINXLogo.webp>; rel=preload; as=image'
           ].join(', '));
         }
         

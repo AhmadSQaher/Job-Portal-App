@@ -6,8 +6,13 @@ import App from "./App.jsx";
 // Lazy load service worker to not block main thread
 const loadServiceWorker = async () => {
   if (import.meta.env.PROD) {
-    const { registerServiceWorker } = await import("./utils/serviceWorker.js");
-    registerServiceWorker();
+    try {
+      const { registerServiceWorker } = await import("./utils/serviceWorker.js");
+      registerServiceWorker();
+    } catch (error) {
+      console.warn('Service worker failed to load:', error);
+      // Service worker is optional, continue without it
+    }
   }
 };
 
